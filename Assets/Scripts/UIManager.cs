@@ -31,6 +31,20 @@ public class UIManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Toggle a specific canvas
+    /// </summary>
+    /// <param name="canvasName">Name of the canvas to toggle</param>
+    public void ToggleCanvas(string canvasName)     
+    {
+        UICanvas targetCanvas = managedCanvases.Find(c => c.name == canvasName);
+        if (targetCanvas?.canvas != null)
+        {
+            bool isActive = targetCanvas.canvas.gameObject.activeSelf;
+            targetCanvas.canvas.gameObject.SetActive(!isActive);
+        }
+    }
+
+    /// <summary>
     /// Show a specific canvas
     /// </summary>
     /// <param name="canvasName">Name of the canvas to show</param>
