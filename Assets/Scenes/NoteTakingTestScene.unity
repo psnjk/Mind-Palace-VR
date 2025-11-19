@@ -1143,7 +1143,7 @@ BoxCollider:
     m_Bits: 0
   m_LayerOverridePriority: 0
   m_IsTrigger: 0
-  m_ProvidesContacts: 0
+  m_ProvidesContacts: 1
   m_Enabled: 1
   serializedVersion: 3
   m_Size: {x: 1, y: 1, z: 1}
@@ -2285,6 +2285,18 @@ PrefabInstance:
       propertyPath: m_Camera
       value: 
       objectReference: {fileID: 2067566596}
+    - target: {fileID: 4761361518126138915, guid: d65fb3731b8ceca47b13e32f8bde9adb, type: 3}
+      propertyPath: m_IsKinematic
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 4761361518126138915, guid: d65fb3731b8ceca47b13e32f8bde9adb, type: 3}
+      propertyPath: m_CollisionDetection
+      value: 2
+      objectReference: {fileID: 0}
+    - target: {fileID: 5078561469184196548, guid: d65fb3731b8ceca47b13e32f8bde9adb, type: 3}
+      propertyPath: m_MovementType
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 5645291792791619861, guid: d65fb3731b8ceca47b13e32f8bde9adb, type: 3}
       propertyPath: m_Name
       value: Note
