@@ -5,7 +5,8 @@ using UnityEngine.XR.Interaction.Toolkit;
 public enum NodeType
 {
     Note,
-    Cube
+    Cube,
+    Switchable
 }
 
 public class NodeManager : MonoBehaviour
@@ -20,6 +21,9 @@ public class NodeManager : MonoBehaviour
 
     [Tooltip("Cube Prefab to spawn as test")]
     public GameObject cubePrefab;
+
+    [Tooltip("Switchable Prefab to spawn as test")]
+    public GameObject switchablePrefab;
 
     [Tooltip("Reference to the Right Controller (ActionBasedController or XRBaseController)")]
     public Transform rightControllerTransform;
@@ -89,6 +93,8 @@ public class NodeManager : MonoBehaviour
                 return notePrefab;
             case NodeType.Cube:
                 return cubePrefab;
+            case NodeType.Switchable:
+                return switchablePrefab;
             default:
                 return notePrefab;
         }
