@@ -2067,6 +2067,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": true
+                },
+                {
+                    "name": "Click Right Thumbstick",
+                    "type": "Button",
+                    "id": "5d18f33d-591d-4bce-9965-6f6ee3adc597",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -2353,6 +2362,17 @@
                     "processors": "ScaleVector2(x=0),StickDeadzone",
                     "groups": "",
                     "action": "Translate Manipulation",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "a5bf2f12-77c6-4910-acbf-5dba99440273",
+                    "path": "<XRController>{RightHand}/thumbstickClicked",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Click Right Thumbstick",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
