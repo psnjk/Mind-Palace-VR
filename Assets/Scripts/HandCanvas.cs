@@ -1,12 +1,15 @@
 using TMPro;
 using UnityEngine;
 using System;
+using UnityEngine.UI;
 
 public class HandCanvas : MonoBehaviour
 {
 
     [Tooltip("Reference to the NodeManager to change the currently selected Node for spawning")]
     [SerializeField] private NodeManager nodeManager;
+    [SerializeField] private UIManager uiManager;
+
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
@@ -24,7 +27,22 @@ public class HandCanvas : MonoBehaviour
             }
         }
 
+        if (uiManager == null)
+        {
+            uiManager = FindObjectOfType<UIManager>();
+            if (uiManager == null)
+            {
+                Debug.LogError("[HandCanvas] UIManager not found!");
+            }
+            else
+            {
+                Debug.Log("[HandCanvas] UIManager found automatically");
+
+            }
+        }
+
         SetupNodeSelectionDropdown();
+        SetupConsoleToggle();
 
     }
 
@@ -87,6 +105,41 @@ public class HandCanvas : MonoBehaviour
         {
             Debug.LogWarning($"'Node Selection Dropdown' found on {gameObject.name}, but it doesn't have a Dropdown component!");
         }
+
+    }
+
+    void SetupConsoleToggle()
+    {
+
+        Transform background = transform.Find("Background");
+        if (background == null)
+        {
+            Debug.LogWarning($"No child named 'Background' found under Hand Canvas on {gameObject.name}");
+            return;
+        }
+
+        Transform consoleToggleTransform = background.Find("Console Toggle");
+        if (consoleToggleTransform == null)
+        {
+            Debug.LogWarning($"No child named 'Console Toggle' found under Background on {gameObject.name}");
+            return;
+        }
+
+        Toggle consoleToggle = consoleToggleTransform.GetComponent<Toggle>();
+        if (consoleToggle != null)
+        {
+            consoleToggle.onValueChanged.AddListener((bool isOn) => {
+                if (uiManager != null)
+                {
+                    uiManager.ToggleCanvas("Console");
+                }
+            });
+        }
+        else
+        {
+            Debug.LogWarning($"'Console Toggle' found on {gameObject.name}, but it doesn't have a Toggle component!");
+        }
+
 
     }
 }
