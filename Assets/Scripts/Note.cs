@@ -1,4 +1,7 @@
+using System;
+using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -11,6 +14,24 @@ public class Note : MonoBehaviour
     private XRGrabInteractable _grabInteractable;
 
     private string _instanceID;
+
+    public TMP_InputField inputField;
+
+    private void Awake()
+    {
+        // add listener for input field selection
+        inputField.onSelect.AddListener(OnFieldSelect);
+    }
+
+    /// <summary>
+    /// Used to notify the InputFieldFocusManager that this field has been selected to insert the result of the speech transcription on the field.
+    /// </summary>
+    /// <param name="eventData"></param>
+    public void OnFieldSelect(string _)
+    {
+        Debug.Log($"[Note] onFieldSelect ran for {_instanceID}");
+        InputFieldFocusManager.Instance.SetFocusedField(inputField);
+    }
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -74,8 +95,32 @@ public class Note : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-
+        //if (inputField.isFocused)
+        //{
+        //    int caretPos = inputField.caretPosition;
+        //    Debug.Log("[Note] Caret Position: " + caretPos);
+        //}
     }
+
+    [ContextMenu("Test Insert Text")]
+    public void TestInsertText()
+    {
+        string textToInsert = "Hello Hello Man";
+        if (inputField.isFocused)
+        {
+            int pos = inputField.caretPosition;
+            string original = inputField.text;
+
+            // Insert at caret
+            inputField.text = original.Insert(pos, textToInsert);
+
+            // Move caret to the end of inserted text
+            inputField.caretPosition = pos + textToInsert.Length;
+            inputField.selectionAnchorPosition = inputField.caretPosition;
+            inputField.selectionFocusPosition = inputField.caretPosition;
+        }
+    }
+
 
     /// <summary>
     /// Due to some XR Interaction Toolkit quirks, we need to have explicit onGrab and onRelease methods to handle some XR Grab Interactable and RigidBody parameters to make sure that the notes don't go through other objects when being grabbed but still look at the camera when released and not fly out in zero gravity.

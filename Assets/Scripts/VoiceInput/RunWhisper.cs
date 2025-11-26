@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using Unity.InferenceEngine;
 using System.Text;
+using System.Threading.Tasks;
 using Unity.Collections;
 using Newtonsoft.Json;
 
@@ -84,7 +85,7 @@ public class RunWhisper : MonoBehaviour
         Debug.Log("[RunWhisper] Whisper initialization complete!");
     }
 
-    public async void Transcribe(AudioClip inputClip)
+    public async Task<string> Transcribe(AudioClip inputClip)
     {
         if (!isInitialized)
         {
@@ -95,13 +96,13 @@ public class RunWhisper : MonoBehaviour
         if (isTranscribing)
         {
             Debug.LogWarning("[RunWhisper] Already transcribing, please wait...");
-            return;
+            return "";
         }
 
         if (inputClip == null)
         {
             Debug.LogError("[RunWhisper] Input audio clip is null!");
-            return;
+            return "";
         }
 
         Debug.Log($"[RunWhisper] Starting transcription of clip: {inputClip.name} ({inputClip.length}s)");
@@ -139,6 +140,7 @@ public class RunWhisper : MonoBehaviour
             }
 
             Debug.Log($"[RunWhisper] Transcription complete: '{outputString}'");
+            return outputString;
         }
         catch (System.Exception e)
         {
@@ -164,6 +166,8 @@ public class RunWhisper : MonoBehaviour
                 audioInput = null;
             }
         }
+
+        return "";
     }
 
     public bool IsReady => isInitialized && !isTranscribing;
