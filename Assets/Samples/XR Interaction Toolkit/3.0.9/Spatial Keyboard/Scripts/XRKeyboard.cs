@@ -28,12 +28,12 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
                 }
 
                 // (PATCH) Track selection changes
-                if (currentInputField.selectionAnchorPosition != _currentSelectionStart || 
+                if (currentInputField.selectionAnchorPosition != _currentSelectionStart ||
       currentInputField.selectionFocusPosition != _currentSelectionEnd)
                 {
-      _currentSelectionStart = currentInputField.selectionAnchorPosition;
-  _currentSelectionEnd = currentInputField.selectionFocusPosition;
-   Debug.Log($"[XRKeyboard] Selection changed: {_currentSelectionStart} to {_currentSelectionEnd}");
+                    _currentSelectionStart = currentInputField.selectionAnchorPosition;
+                    _currentSelectionEnd = currentInputField.selectionFocusPosition;
+                    Debug.Log($"[XRKeyboard] Selection changed: {_currentSelectionStart} to {_currentSelectionEnd}");
                 }
             }
 
@@ -312,14 +312,14 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
 
         /// <summary>
         /// List of keys associated with this keyboard.
-        /// /// </summary>
+        /// </summary>
         public List<XRKeyboardKey> keys { get; set; }
 
         int m_CaretPosition;
 
         /// <summary>
         /// Caret index of this keyboard.
-        /// /// </summary>
+        /// </summary>
         public int caretPosition
         {
             get => m_CaretPosition;
@@ -343,19 +343,19 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         /// <summary>
         /// (PATCH) Checks if there is currently selected text in the input field.
         /// </summary>
-        protected bool HasSelection => currentInputField != null && 
+        protected bool HasSelection => currentInputField != null &&
     currentInputField.selectionAnchorPosition != currentInputField.selectionFocusPosition;
 
         /// <summary>
         /// (PATCH) Gets the start position of the current selection (the smaller of anchor and focus).
         /// </summary>
-        protected int SelectionStart => currentInputField == null ? -1 : 
+        protected int SelectionStart => currentInputField == null ? -1 :
     Mathf.Min(currentInputField.selectionAnchorPosition, currentInputField.selectionFocusPosition);
 
         /// <summary>
         /// (PATCH) Gets the end position of the current selection (the larger of anchor and focus).
         /// </summary>
-        protected int SelectionEnd => currentInputField == null ? -1 : 
+        protected int SelectionEnd => currentInputField == null ? -1 :
     Mathf.Max(currentInputField.selectionAnchorPosition, currentInputField.selectionFocusPosition);
 
         bool m_IsOpen;
@@ -562,9 +562,9 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
 
             if (HasSelection)
             {
-  // Replace selected text
+                // Replace selected text
                 insertPosition = SelectionStart;
-     charactersToRemove = SelectionEnd - SelectionStart;
+                charactersToRemove = SelectionEnd - SelectionStart;
                 updatedText = updatedText.Remove(insertPosition, charactersToRemove);
                 Debug.Log($"[XRKeyboard] Replacing selection from {SelectionStart} to {SelectionEnd} with '{newText}'");
             }
@@ -575,14 +575,14 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             if (isUpdatedTextWithinLimits)
             {
                 caretPosition = insertPosition + newText.Length;
-     text = updatedText;
+                text = updatedText;
 
-        // (PATCH) Clear selection after inserting text
-        if (currentInputField != null)
-        {
-      currentInputField.selectionAnchorPosition = caretPosition;
-            currentInputField.selectionFocusPosition = caretPosition;
-        }
+                // (PATCH) Clear selection after inserting text
+                if (currentInputField != null)
+                {
+                    currentInputField.selectionAnchorPosition = caretPosition;
+                    currentInputField.selectionFocusPosition = caretPosition;
+                }
             }
             else
             {
@@ -595,7 +595,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
 
             // Turn off shift after typing a letter
             if (m_Shifted && !m_CapsLocked)
-     Shift(!m_Shifted);
+                Shift(!m_Shifted);
         }
 
         /// <summary>
@@ -630,19 +630,19 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             // (PATCH) Handle text selection - delete selected text
             if (HasSelection)
             {
-    var selectionStart = SelectionStart;
-        var selectionLength = SelectionEnd - SelectionStart;
-        text = text.Remove(selectionStart, selectionLength);
- caretPosition = selectionStart;
+                var selectionStart = SelectionStart;
+                var selectionLength = SelectionEnd - SelectionStart;
+                text = text.Remove(selectionStart, selectionLength);
+                caretPosition = selectionStart;
 
-        // Clear selection
-    if (currentInputField != null)
-        {
-         currentInputField.selectionAnchorPosition = caretPosition;
-            currentInputField.selectionFocusPosition = caretPosition;
-      }
+                // Clear selection
+                if (currentInputField != null)
+                {
+                    currentInputField.selectionAnchorPosition = caretPosition;
+                    currentInputField.selectionFocusPosition = caretPosition;
+                }
 
-        Debug.Log($"[XRKeyboard] Backspace deleted selection from {selectionStart} length {selectionLength}");
+                Debug.Log($"[XRKeyboard] Backspace deleted selection from {selectionStart} length {selectionLength}");
             }
             else if (caretPosition > 0)
             {
@@ -884,15 +884,15 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
 
             currentInputField.onValueChanged.AddListener(OnInputFieldValueChange);
 
- // (PATCH) Sync caret position and selection when starting to observe the input field
-    if (currentInputField.isFocused)
-    {
-      _currentCaretPosition = currentInputField.caretPosition;
-        caretPosition = _currentCaretPosition;
-        _currentSelectionStart = currentInputField.selectionAnchorPosition;
- _currentSelectionEnd = currentInputField.selectionFocusPosition;
-        Debug.Log($"[XRKeyboard] Initial sync - caret: {_currentCaretPosition}, selection: {_currentSelectionStart}-{_currentSelectionEnd}");
-    }
+            // (PATCH) Sync caret position and selection when starting to observe the input field
+            if (currentInputField.isFocused)
+            {
+                _currentCaretPosition = currentInputField.caretPosition;
+                caretPosition = _currentCaretPosition;
+                _currentSelectionStart = currentInputField.selectionAnchorPosition;
+                _currentSelectionEnd = currentInputField.selectionFocusPosition;
+                Debug.Log($"[XRKeyboard] Initial sync - caret: {_currentCaretPosition}, selection: {_currentSelectionStart}-{_currentSelectionEnd}");
+            }
         }
 
         /// <summary>
@@ -905,15 +905,15 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             if (text != updatedText)
             {
                 text = updatedText;
-   // Sync caret position and selection after text change
- if (currentInputField != null)
-        {
-_currentCaretPosition = currentInputField.caretPosition;
-  caretPosition = _currentCaretPosition;
-         _currentSelectionStart = currentInputField.selectionAnchorPosition;
-            _currentSelectionEnd = currentInputField.selectionFocusPosition;
-        }
-   }
+                // Sync caret position and selection after text change
+                if (currentInputField != null)
+                {
+                    _currentCaretPosition = currentInputField.caretPosition;
+                    caretPosition = _currentCaretPosition;
+                    _currentSelectionStart = currentInputField.selectionAnchorPosition;
+                    _currentSelectionEnd = currentInputField.selectionFocusPosition;
+                }
+            }
         }
 
         #endregion
