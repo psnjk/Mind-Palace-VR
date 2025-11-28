@@ -12,6 +12,24 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
     public class XRKeyboard : MonoBehaviour
     {
         /// <summary>
+        /// (PATCH) Poll for the current caret position 
+        /// </summary>
+        void Update()
+        {
+            if (currentInputField && currentInputField.isFocused && currentInputField.caretPosition != _currentCaretPosition)
+            {
+                _currentCaretPosition = currentInputField.caretPosition;
+                // Sync the keyboard's internal caret position with the input field's caret position
+                caretPosition = _currentCaretPosition;
+                Debug.Log($"[XRKeyboard] Synced caret position: {_currentCaretPosition}");
+            }
+
+        }
+
+        private int _currentCaretPosition = -1;
+
+
+        /// <summary>
         /// Layout this keyboard is able to switch to with the corresponding layout command.
         /// </summary>
         /// <seealso cref="subsetLayout"/>
@@ -494,7 +512,7 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             }
         }
 
-#region Process Key Functions
+        #region Process Key Functions
 
         /// <summary>
         /// Updates the keyboard text by inserting the <see cref="newText"/> string into the existing <see cref="text"/>.
@@ -636,9 +654,9 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             return false;
         }
 
-#endregion
+        #endregion
 
-#region Open Functions
+        #region Open Functions
 
         /// <summary>
         /// Opens the keyboard with a <see cref="TMP_InputField"/> parameter as the active input field.
@@ -697,9 +715,9 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             m_IsOpen = true;
         }
 
-#endregion
+        #endregion
 
-#region Close Functions
+        #region Close Functions
 
         /// <summary>
         /// Process close command for keyboard.
@@ -762,9 +780,9 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
             }
         }
 
-#endregion
+        #endregion
 
-#region Input Field Handling
+        #region Input Field Handling
 
         protected virtual void StopObservingInputField(TMP_InputField inputField)
         {
@@ -780,6 +798,14 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
                 return;
 
             currentInputField.onValueChanged.AddListener(OnInputFieldValueChange);
+
+            // (PATCH) Sync caret position when starting to observe the input field
+            if (currentInputField.isFocused)
+            {
+                _currentCaretPosition = currentInputField.caretPosition;
+                caretPosition = _currentCaretPosition;
+                Debug.Log($"[XRKeyboard] Initial caret sync: {_currentCaretPosition}");
+            }
         }
 
         /// <summary>
@@ -788,11 +814,20 @@ namespace UnityEngine.XR.Interaction.Toolkit.Samples.SpatialKeyboard
         /// <param name="updatedText">The text of the input field.</param>
         protected virtual void OnInputFieldValueChange(string updatedText)
         {
-            caretPosition = updatedText.Length;
-            text = updatedText;
+            // (PATCH) Only update if the text change didn't come from the keyboard itself
+            if (text != updatedText)
+            {
+                text = updatedText;
+                // Sync caret position after text change
+                if (currentInputField != null)
+                {
+                    _currentCaretPosition = currentInputField.caretPosition;
+                    caretPosition = _currentCaretPosition;
+                }
+            }
         }
 
-#endregion
+        #endregion
     }
 }
 #endif
