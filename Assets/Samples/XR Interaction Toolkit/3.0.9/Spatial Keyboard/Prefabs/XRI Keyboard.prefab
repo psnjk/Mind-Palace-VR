@@ -298,7 +298,7 @@ AudioSource:
   m_Enabled: 1
   serializedVersion: 4
   OutputAudioMixerGroup: {fileID: 0}
-  m_audioClip: {fileID: 8300000, guid: f81fcd9edaa84754869e9e9acb3aece4, type: 3}
+  m_audioClip: {fileID: 0}
   m_Resource: {fileID: 8300000, guid: f81fcd9edaa84754869e9e9acb3aece4, type: 3}
   m_PlayOnAwake: 0
   m_Volume: 1
@@ -2043,7 +2043,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_OptimizeOnStart: 1
-  m_Canvas: {fileID: 7979916828988463974}
   m_BatchGroupParentTransform: {fileID: 234637812713154626}
   m_ButtonParentTransform: {fileID: 4863097412243294290}
   m_ImageParentTransform: {fileID: 2176062184860990979}
@@ -7052,10 +7051,6 @@ PrefabInstance:
       value: 
       objectReference: {fileID: 47032972, guid: e6a95303640ef3c4188ac4583185f5ba, type: 3}
     - target: {fileID: 5599558209658972096, guid: 8a27b1b39d17cdc4c8f3da30ea294c6f, type: 3}
-      propertyPath: m_Interactable
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 5599558209658972096, guid: 8a27b1b39d17cdc4c8f3da30ea294c6f, type: 3}
       propertyPath: shiftCharacter
       value: One day I'll be a mic
       objectReference: {fileID: 0}
@@ -7078,13 +7073,33 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 1253337762353444269, guid: 8a27b1b39d17cdc4c8f3da30ea294c6f, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 5789601251276862195}
   m_SourcePrefab: {fileID: 100100000, guid: 8a27b1b39d17cdc4c8f3da30ea294c6f, type: 3}
 --- !u!224 &8124702713680179600 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2197442164563211728, guid: 8a27b1b39d17cdc4c8f3da30ea294c6f, type: 3}
   m_PrefabInstance: {fileID: 7979916829706306624}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &9212847641197982189 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 1253337762353444269, guid: 8a27b1b39d17cdc4c8f3da30ea294c6f, type: 3}
+  m_PrefabInstance: {fileID: 7979916829706306624}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &5789601251276862195
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 9212847641197982189}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 98f8ac5370f3d6047849ab5b5ef309c9, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &7979916829770167017
 PrefabInstance:
   m_ObjectHideFlags: 0
