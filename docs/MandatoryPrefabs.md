@@ -1,0 +1,2 @@
+# Mandatory Prefabs
+To setup a scene, drag all the prefabs in `Prefabs/Mandatory` unto it. Each of those prefabs will automatically connect to the other game object in the scene, no need to assign anything manually, just leave it as `None` in the inspector.

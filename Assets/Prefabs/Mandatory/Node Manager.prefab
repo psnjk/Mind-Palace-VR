@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &1440948322566632012
+--- !u!1 &3927248351168730714
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,49 +8,46 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 8787181312469498797}
-  - component: {fileID: 833588729155503780}
+  - component: {fileID: 4379093242471712767}
+  - component: {fileID: 8538394980802798636}
   m_Layer: 0
-  m_Name: UI Manager
+  m_Name: Node Manager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &8787181312469498797
+--- !u!4 &4379093242471712767
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1440948322566632012}
+  m_GameObject: {fileID: 3927248351168730714}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &833588729155503780
+--- !u!114 &8538394980802798636
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1440948322566632012}
+  m_GameObject: {fileID: 3927248351168730714}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 060a79142337e85429c9180a0df5b9e8, type: 3}
+  m_Script: {fileID: 11500000, guid: d6bc3d5b3a7f9ba499ff741ac10b8099, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  managedCanvases:
-  - name: Settings
-    canvas: {fileID: 0}
-    startActive: 0
-  - name: Menu
-    canvas: {fileID: 0}
-    startActive: 0
-  - name: Console
-    canvas: {fileID: 0}
-    startActive: 0
+  selectedNode: 0
+  notePrefab: {fileID: 5645291792791619861, guid: d65fb3731b8ceca47b13e32f8bde9adb, type: 3}
+  cubePrefab: {fileID: 1856943733090210708, guid: 1b12d00212f85054d99e0cd385fe81f7, type: 3}
+  switchablePrefab: {fileID: 2134371356469887568, guid: 35d8b9216c0e6644595dfcc52081f38b, type: 3}
+  rightControllerTransform: {fileID: 0}
+  spawnOffset: {x: 0, y: 0.1, z: 0.3}
+  nodesParent: {fileID: 0}

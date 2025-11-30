@@ -1,29 +1,16 @@
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.XR.Interaction.Toolkit;
 
-public enum NodeType
-{
-    Note,
-    Cube,
-    Switchable
-}
-
 public class NodeManager : MonoBehaviour
 {
     [Header("Node Selection")]
-    [Tooltip("Currently selected node for spawning, will be set from the Hand Menu")]
-    public NodeType selectedNode = NodeType.Note;
+    [Tooltip("Currently selected node index for spawning, will be set from the Hand Menu")]
+    public int selectedNodeIndex = 0;
 
-    [Header("Spawn Settings")]
-    [Tooltip("The prefab to spawn as a note")]
-    public GameObject notePrefab;
-
-    [Tooltip("Cube Prefab to spawn as test")]
-    public GameObject cubePrefab;
-
-    [Tooltip("Switchable Prefab to spawn as test")]
-    public GameObject switchablePrefab;
+    [Header("Spawnable Prefabs")]
+    public List<GameObject> spawnablePrefabs;
 
     [Tooltip("Reference to the Right Controller (ActionBasedController or XRBaseController)")]
     public Transform rightControllerTransform;
@@ -41,31 +28,74 @@ public class NodeManager : MonoBehaviour
     void Start()
     {
         // Create notes parent if it doesn't exist
-        if (nodesParent == null)
+        if (!nodesParent)
         {
             GameObject parentObj = new GameObject("Spawned Nodes");
             nodesParent = parentObj.transform;
         }
 
-        // Validate setup
-        if (notePrefab == null)
+        // Assign the right controller transform if not assigned
+        if (!rightControllerTransform)
         {
-            Debug.LogError("[NodeManager] No note prefab assigned!");
+            SetupRightControllerTransform();
         }
 
-        if (cubePrefab == null)
+        if (spawnablePrefabs.Count == 0)
         {
-            Debug.LogError("[NodeManager] No cube prefab assigned!");
+            SetupSpawnablePrefabs();
         }
 
-        if (rightControllerTransform == null)
+        // Validate initial selected index
+        ValidateSelectedIndex();
+    }
+
+    /// <summary>
+    /// Find the spawnable prefabs in Resources folder and adds them to the list
+    /// </summary>
+    private void SetupSpawnablePrefabs()
+    {
+        GameObject[] loadedPrefabs = Resources.LoadAll<GameObject>("Spawnables");
+        spawnablePrefabs = new List<GameObject>(loadedPrefabs);
+        Debug.Log("[NodeManager] Loaded " + spawnablePrefabs.Count + " spawnable prefabs.");
+
+        // Validate selected index after loading prefabs
+        ValidateSelectedIndex();
+    }
+
+    /// <summary>
+    /// Validates and clamps the selected index to be within valid range
+    /// </summary>
+    private void ValidateSelectedIndex()
+    {
+        if (spawnablePrefabs.Count > 0)
         {
-            Debug.LogWarning("[NodeManager] Right controller transform not assigned. Auto-discovery disabled.");
+            selectedNodeIndex = Mathf.Clamp(selectedNodeIndex, 0, spawnablePrefabs.Count - 1);
         }
         else
         {
-            Debug.Log("[NodeManager] Right controller assigned: " + rightControllerTransform.name);
+            selectedNodeIndex = 0;
         }
+    }
+
+    /// <summary>
+    /// Finds the right controller transform if not assigned
+    /// </summary>
+    private void SetupRightControllerTransform()
+    {
+        // Search ALL scene objects, active or inactive (since in Unity this looks to be the only way to find inactive objects, because the controllers are inactive at the start of the scene, up until the user picks them up)
+        var allTransforms = Resources.FindObjectsOfTypeAll<Transform>();
+
+        foreach (var t in allTransforms)
+        {
+            if (t.CompareTag("RightController"))
+            {
+                rightControllerTransform = t;
+                Debug.Log("[NodeManager] Found Right Controller (inactive allowed).");
+                return;
+            }
+        }
+
+        Debug.LogError("[NodeManager] Could not find Right Controller!");
     }
 
     void Update()
@@ -83,38 +113,84 @@ public class NodeManager : MonoBehaviour
     }
 
     /// <summary>
-    /// Get the currently selected prefab based on selectedTool
+    /// Get the currently selected prefab based on selectedNodeIndex
     /// </summary>
     private GameObject GetSelectedPrefab()
     {
-        switch (selectedNode)
+        if (spawnablePrefabs.Count == 0)
         {
-            case NodeType.Note:
-                return notePrefab;
-            case NodeType.Cube:
-                return cubePrefab;
-            case NodeType.Switchable:
-                return switchablePrefab;
-            default:
-                return notePrefab;
+            Debug.LogError("[NodeManager] No spawnable prefabs available!");
+            return null;
         }
+
+        if (selectedNodeIndex < 0 || selectedNodeIndex >= spawnablePrefabs.Count)
+        {
+            Debug.LogError($"[NodeManager] Selected index {selectedNodeIndex} is out of range! Valid range: 0-{spawnablePrefabs.Count - 1}");
+            return null;
+        }
+
+        return spawnablePrefabs[selectedNodeIndex];
     }
 
     /// <summary>
-    /// Set the selected node type
+    /// Get the name of the currently selected prefab
     /// </summary>
-    public void SetSelectedNode(NodeType nodeType)
+    public string GetSelectedPrefabName()
     {
-        selectedNode = nodeType;
-        Debug.Log($"[NodeManager] Selected node changed to: {selectedNode}");
+        GameObject selectedPrefab = GetSelectedPrefab();
+        return selectedPrefab != null ? selectedPrefab.name : "None";
     }
 
     /// <summary>
-    /// Start showing the object preview based on selected node
+    /// Set the selected node index
+    /// </summary>
+    public void SetSelectedNodeIndex(int index)
+    {
+        if (spawnablePrefabs.Count == 0)
+        {
+            Debug.LogWarning("[NodeManager] No spawnable prefabs available!");
+            return;
+        }
+
+        if (index < 0 || index >= spawnablePrefabs.Count)
+        {
+            Debug.LogWarning($"[NodeManager] Index {index} is out of range! Valid range: 0-{spawnablePrefabs.Count - 1}");
+            return;
+        }
+
+        selectedNodeIndex = index;
+        string prefabName = GetSelectedPrefabName();
+        Debug.Log($"[NodeManager] Selected node changed to index {selectedNodeIndex}: {prefabName}");
+    }
+
+    /// <summary>
+    /// Get the total number of spawnable prefabs
+    /// </summary>
+    public int GetSpawnablePrefabCount()
+    {
+        return spawnablePrefabs.Count;
+    }
+
+    /// <summary>
+    /// Get the name of a prefab at a specific index
+    /// </summary>
+    public string GetPrefabNameAtIndex(int index)
+    {
+        if (index < 0 || index >= spawnablePrefabs.Count)
+        {
+            return "Invalid Index";
+        }
+
+        return spawnablePrefabs[index] != null ? spawnablePrefabs[index].name : "Null Prefab";
+    }
+
+    /// <summary>
+    /// Start showing the object preview based on selected node index
     /// </summary>
     public void StartNodePreview()
     {
-        Debug.Log($"[NodeManager] StartPreview called for node: {selectedNode}");
+        string prefabName = GetSelectedPrefabName();
+        Debug.Log($"[NodeManager] StartPreview called for prefab: {prefabName} (index: {selectedNodeIndex})");
 
         if (_isPreviewActive)
         {
@@ -125,7 +201,7 @@ public class NodeManager : MonoBehaviour
         GameObject selectedPrefab = GetSelectedPrefab();
         if (selectedPrefab == null)
         {
-            Debug.LogError($"[NodeManager] Cannot start preview: No prefab assigned for {selectedNode}!");
+            Debug.LogError($"[NodeManager] Cannot start preview: No prefab available at index {selectedNodeIndex}!");
             return;
         }
 
@@ -137,11 +213,11 @@ public class NodeManager : MonoBehaviour
 
         // Calculate spawn position
         Vector3 spawnPosition = rightControllerTransform.position + rightControllerTransform.TransformDirection(spawnOffset);
-        Debug.Log($"[NodeManager] Creating {selectedNode} preview at position: {spawnPosition}");
+        Debug.Log($"[NodeManager] Creating {prefabName} preview at position: {spawnPosition}");
 
         // Create preview object
         _currentPreview = Instantiate(selectedPrefab, spawnPosition, rightControllerTransform.rotation, nodesParent);
-        Debug.Log($"[NodeManager] {selectedNode} preview object instantiated");
+        Debug.Log($"[NodeManager] {prefabName} preview object instantiated");
 
         //MakeTransparent(_currentPreview);
 
@@ -153,15 +229,16 @@ public class NodeManager : MonoBehaviour
         }
 
         _isPreviewActive = true;
-        Debug.Log($"[NodeManager] {selectedNode} preview is now active");
+        Debug.Log($"[NodeManager] {prefabName} preview is now active");
     }
 
     /// <summary>
-    /// Spawn the actual object at preview position based on selected node
+    /// Spawn the actual object at preview position based on selected node index
     /// </summary>
     public GameObject FinishNodeCreation()
     {
-        Debug.Log($"[NodeManager] FinishCreation called for node: {selectedNode}");
+        string prefabName = GetSelectedPrefabName();
+        Debug.Log($"[NodeManager] FinishCreation called for prefab: {prefabName} (index: {selectedNodeIndex})");
 
         if (!_isPreviewActive)
         {
@@ -178,7 +255,7 @@ public class NodeManager : MonoBehaviour
         // Store preview position and rotation
         Vector3 finalPosition = _currentPreview.transform.position;
         Quaternion finalRotation = _currentPreview.transform.rotation;
-        Debug.Log($"[NodeManager] Finishing {selectedNode} creation at position: {finalPosition}");
+        Debug.Log($"[NodeManager] Finishing {prefabName} creation at position: {finalPosition}");
 
         // Destroy the preview
         DestroyImmediate(_currentPreview);
@@ -189,7 +266,7 @@ public class NodeManager : MonoBehaviour
         // Create the actual object
         GameObject selectedPrefab = GetSelectedPrefab();
         GameObject actualObject = Instantiate(selectedPrefab, finalPosition, finalRotation, nodesParent);
-        Debug.Log($"[NodeManager] Actual {selectedNode} created successfully");
+        Debug.Log($"[NodeManager] Actual {prefabName} created successfully");
 
         return actualObject;
     }

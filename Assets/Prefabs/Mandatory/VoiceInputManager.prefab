@@ -49,7 +49,7 @@ MonoBehaviour:
   audioClip: {fileID: 0}
   audioDecoder1: {fileID: 5022602860645237092, guid: 8c75040d8bb2ca747aa0767b87d81c92, type: 3}
   audioDecoder2: {fileID: 5022602860645237092, guid: b4defcea193bea842b472db9d142ab6a, type: 3}
-  audioEncoder: {fileID: 5022602860645237092, guid: 5f0ecaf73be1ce34e908e8939ee9866e, type: 3}
+  audioEncoder: {fileID: 5022602860645237092, guid: ea9b04322042bf84fa299a3b91bb8017, type: 3}
   logMelSpectro: {fileID: 5022602860645237092, guid: 1035939f9ab4b9f4981929e6559b69ff, type: 3}
   vocabAsset: {fileID: 4900000, guid: bbd69de53b420f14a812a3a0ac637a60, type: 3}
 --- !u!114 &6757457958042257672

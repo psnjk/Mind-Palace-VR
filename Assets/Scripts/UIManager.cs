@@ -21,7 +21,13 @@ public class UIManager : MonoBehaviour
     private void Start()
     {
         Debug.Log($"[UIManager] Initializing {managedCanvases.Count} managed canvases");
-     
+
+        // Find all canvases in the scene if none are assigned
+        if (managedCanvases.Count == 0)
+        {
+            SetupCanvases();
+        }
+
         // Initialize canvas states according to startActive
         foreach (var uiCanvas in managedCanvases)
         {
@@ -35,18 +41,75 @@ public class UIManager : MonoBehaviour
                 Debug.LogWarning($"[UIManager] Canvas '{uiCanvas.name}' has null canvas reference!");
             }
         }
-   
+
         Debug.Log("[UIManager] Initialization complete");
+    }
+
+    /// <summary>
+    /// Setups the canvases from the scene.
+    /// </summary>
+    private void SetupCanvases()
+    {
+        // Clear existing managed canvases
+        managedCanvases.Clear();
+
+        // Find all Canvas components in the scene (including inactive ones)
+        Canvas[] allCanvases = FindObjectsOfType<Canvas>(true);
+
+        Debug.Log($"[UIManager] Found {allCanvases.Length} total canvases in scene");
+
+        // Search for the specific canvases we want to manage
+        foreach (Canvas canvas in allCanvases)
+        {
+            string canvasName = canvas.name;
+
+            // Settings Canvas
+            if (canvasName == "Settings Canvas")
+            {
+                UICanvas settingsCanvas = new UICanvas
+                {
+                    name = "Settings",
+                    canvas = canvas,
+                    startActive = false
+                };
+                managedCanvases.Add(settingsCanvas);
+                Debug.Log($"[UIManager] Found and added Settings Canvas: {canvas.name}");
+            }
+            else if (canvasName == "Hand Canvas")
+            {
+                UICanvas menuCanvas = new UICanvas
+                {
+                    name = "Menu",
+                    canvas = canvas,
+                    startActive = false
+                };
+                managedCanvases.Add(menuCanvas);
+                Debug.Log($"[UIManager] Found and added Hand Canvas as Menu: {canvas.name}");
+            }
+            else if (canvasName == "Console Canvas")
+            {
+                UICanvas consoleCanvas = new UICanvas
+                {
+                    name = "Console",
+                    canvas = canvas,
+                    startActive = false
+                };
+                managedCanvases.Add(consoleCanvas);
+                Debug.Log($"[UIManager] Found and added Console Canvas: {canvas.name}");
+            }
+        }
+
+        Debug.Log($"[UIManager] SetupCanvases complete - Added {managedCanvases.Count} managed canvases");
     }
 
     /// <summary>
     /// Toggle a specific canvas
     /// </summary>
     /// <param name="canvasName">Name of the canvas to toggle</param>
-    public void ToggleCanvas(string canvasName)     
+    public void ToggleCanvas(string canvasName)
     {
         Debug.Log($"[UIManager] ToggleCanvas called for: '{canvasName}'");
-        
+
         UICanvas targetCanvas = managedCanvases.Find(c => c.name == canvasName);
         if (targetCanvas?.canvas != null)
         {
@@ -67,7 +130,7 @@ public class UIManager : MonoBehaviour
     public void ShowCanvas(string canvasName)
     {
         Debug.Log($"[UIManager] ShowCanvas called for: '{canvasName}'");
-        
+
         UICanvas targetCanvas = managedCanvases.Find(c => c.name == canvasName);
         if (targetCanvas?.canvas != null)
         {
@@ -106,7 +169,7 @@ public class UIManager : MonoBehaviour
     public void HideAllCanvases()
     {
         Debug.Log("[UIManager] HideAllCanvases called");
-    
+
         foreach (var uiCanvas in managedCanvases)
         {
             if (uiCanvas.canvas != null)
@@ -119,7 +182,7 @@ public class UIManager : MonoBehaviour
                 Debug.LogWarning($"[UIManager] Canvas '{uiCanvas.name}' has null canvas reference!");
             }
         }
-      
+
         Debug.Log("[UIManager] HideAllCanvases complete");
     }
 
