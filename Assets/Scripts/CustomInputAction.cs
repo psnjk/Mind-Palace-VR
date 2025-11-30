@@ -8,6 +8,7 @@ public class CustomInputAction : MonoBehaviour
     public InputActionReference menuButton;
     [SerializeField] private UIManager uiManager;
     private readonly string _menuCanvasName = "Menu";
+    private readonly string _settingsCanvasName = "Settings";
 
     // Create Node (Click Right Thumbstick)
     public InputActionReference createNodeButton;
@@ -28,10 +29,10 @@ public class CustomInputAction : MonoBehaviour
         createNodeButton.action.canceled += OnThumbstickReleased;
 
         // Find NodeManager if not assigned
-        if (nodeManager == null)
+        if (!nodeManager)
         {
             nodeManager = FindObjectOfType<NodeManager>();
-            if (nodeManager == null)
+            if (!nodeManager)
             {
                 Debug.LogError("[CustomInputAction] NodeManager not found!");
             }
@@ -40,12 +41,27 @@ public class CustomInputAction : MonoBehaviour
                 Debug.Log("[CustomInputAction] NodeManager found automatically");
             }
         }
+
+        // Find UIManager if not assigned
+        if (!uiManager)
+        {
+            uiManager = FindObjectOfType<UIManager>();
+            if (!uiManager)
+            {
+                Debug.LogError("[CustomInputAction] UIManager not found!");
+            }
+            else
+            {
+                Debug.Log("[CustomInputAction] UIManager found automatically");
+            }
+        }
     }
 
     void ToggleMenu(InputAction.CallbackContext context)
     {
         if (uiManager != null)
         {
+            uiManager.HideCanvas(_settingsCanvasName);
             uiManager.ToggleCanvas(_menuCanvasName);
         }
     }

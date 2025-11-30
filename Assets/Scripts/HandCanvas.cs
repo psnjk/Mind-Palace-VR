@@ -43,6 +43,7 @@ public class HandCanvas : MonoBehaviour
 
         SetupNodeSelectionDropdown();
         SetupConsoleToggle();
+        SetupSettingsButton();
 
     }
 
@@ -53,7 +54,7 @@ public class HandCanvas : MonoBehaviour
     }
     
     /// <summary>
-    /// Setup the node selection dropdown with all the nodes that can be spawned with the node manager
+    /// Setup the node selection dropdown with all the spawnable prefabs from the node manager
     /// </summary>
     void SetupNodeSelectionDropdown()
     {
@@ -68,42 +69,50 @@ public class HandCanvas : MonoBehaviour
         Transform nodeSelectionDropdownTransform = background.Find("Node Selection Dropdown");
         if (nodeSelectionDropdownTransform == null)
         {
-            Debug.LogWarning($"No child named 'Note Selection Dropdown' found under Background on {gameObject.name}");
+            Debug.LogWarning($"No child named 'Node Selection Dropdown' found under Background on {gameObject.name}");
             return;
         }
 
-        TMP_Dropdown nodeSelectionDropdown = nodeSelectionDropdownTransform.GetComponent < TMP_Dropdown>();
+        TMP_Dropdown nodeSelectionDropdown = nodeSelectionDropdownTransform.GetComponent<TMP_Dropdown>();
         
-        if (nodeSelectionDropdown != null)
+        if (nodeSelectionDropdown != null && nodeManager != null)
         {
             nodeSelectionDropdown.options.Clear();
 
-            NodeType[] nodeTypes = (NodeType[])Enum.GetValues(typeof(NodeType));
+            int prefabCount = nodeManager.GetSpawnablePrefabCount();
             
-            foreach (NodeType nodeType in nodeTypes)
+            // Add options for each spawnable prefab
+            for (int i = 0; i < prefabCount; i++)
             {
-                TMP_Dropdown.OptionData option = new TMP_Dropdown.OptionData(nodeType.ToString());
+                string prefabName = nodeManager.GetPrefabNameAtIndex(i);
+                TMP_Dropdown.OptionData option = new TMP_Dropdown.OptionData(prefabName);
                 nodeSelectionDropdown.options.Add(option);
             }
 
-            if (nodeManager != null)
-            {
-                nodeSelectionDropdown.value = (int)nodeManager.selectedNode;
-            }
-
+            // Set current value to the selected index from NodeManager
+            nodeSelectionDropdown.value = nodeManager.selectedNodeIndex;
             nodeSelectionDropdown.RefreshShownValue();
 
+            // Listen for dropdown value changes
             nodeSelectionDropdown.onValueChanged.AddListener((int value) => {
-                if (nodeManager != null && value >= 0 && value < nodeTypes.Length)
+                if (nodeManager != null)
                 {
-                    NodeType selectedNodeType = nodeTypes[value];
-                    nodeManager.SetSelectedNode(selectedNodeType);
+                    nodeManager.SetSelectedNodeIndex(value);
                 }
             });
+
+            Debug.Log($"[HandCanvas] Setup dropdown with {prefabCount} prefab options");
         }
         else
         {
-            Debug.LogWarning($"'Node Selection Dropdown' found on {gameObject.name}, but it doesn't have a Dropdown component!");
+            if (nodeSelectionDropdown == null)
+            {
+                Debug.LogWarning($"'Node Selection Dropdown' found on {gameObject.name}, but it doesn't have a TMP_Dropdown component!");
+            }
+            if (nodeManager == null)
+            {
+                Debug.LogWarning($"NodeManager is null, cannot setup dropdown!");
+            }
         }
 
     }
@@ -141,5 +150,39 @@ public class HandCanvas : MonoBehaviour
         }
 
 
+    }
+
+    void SetupSettingsButton()
+    {
+
+        Transform background = transform.Find("Background");
+        if (background == null)
+        {
+            Debug.LogWarning($"No child named 'Background' found under Hand Canvas on {gameObject.name}");
+            return;
+        }
+
+        Transform settingsButtonTransform = background.Find("Settings Button");
+        if (settingsButtonTransform == null)
+        {
+            Debug.LogWarning($"No child named 'Settings Button' found under Background on {gameObject.name}");
+            return;
+        }
+
+        Button settingsButton = settingsButtonTransform.GetComponent<Button>();
+        if (settingsButton != null)
+        {
+            settingsButton.onClick.AddListener(() => {
+                if (uiManager != null)
+                {
+                    uiManager.HideCanvas("Menu");
+                    uiManager.ToggleCanvas("Settings");
+                }
+            });
+        }
+        else
+        {
+            Debug.LogWarning($"'Settings Button' found on {gameObject.name}, but it doesn't have a Button component!");
+        }
     }
 }
