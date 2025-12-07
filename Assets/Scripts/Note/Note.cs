@@ -1,13 +1,14 @@
 using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class Note : MonoBehaviour
 {
+
     private bool _lookAtCamera = true;
     private LookAtCamera _lookAtCameraComponent;
     private Rigidbody _rigidBody;
@@ -95,12 +96,8 @@ public class Note : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
-        //if (inputField.isFocused)
-        //{
-        //    int caretPos = inputField.caretPosition;
-        //    Debug.Log("[Note] Caret Position: " + caretPos);
-        //}
     }
+
 
     [ContextMenu("Test Insert Text")]
     public void TestInsertText()
@@ -158,6 +155,22 @@ public class Note : MonoBehaviour
     /// </summary>
     public void DeleteNote()
     {
+        Debug.Log($"[Note] DeleteNote called for {_instanceID}");
+
+        // Get the NoteLinkable component if it exists
+        NoteLinkable noteLinkable = GetComponent<NoteLinkable>();
+        if (noteLinkable != null && NoteLinkManager.Instance != null)
+        {
+            Debug.Log($"[Note] Manually unregistering note {noteLinkable.NoteID} before deletion");
+
+            // Cancel any active link operation if this note is involved
+            noteLinkable.CancelLinkOperation();
+
+            // Explicitly unregister the note to ensure immediate cleanup
+            NoteLinkManager.Instance.UnregisterNote(noteLinkable);
+        }
+
+        // Destroy the GameObject (this will also trigger OnDestroy methods)
         Destroy(gameObject);
     }
 
