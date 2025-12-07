@@ -2114,6 +2114,15 @@
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
+                },
+                {
+                    "name": "Click Button B",
+                    "type": "Button",
+                    "id": "91325e1f-e61d-440a-b006-6f2e321cd628",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
                 }
             ],
             "bindings": [
@@ -2433,6 +2442,17 @@
                     "processors": "",
                     "groups": "",
                     "action": "Click Button A",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "68e0e0c2-a822-4874-9e2f-b04cfa417f84",
+                    "path": "<XRController>{RightHand}/{SecondaryButton}",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "Click Button B",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }

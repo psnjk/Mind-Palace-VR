@@ -124,6 +124,8 @@ public class NoteLinkManager : MonoBehaviour
 
         // Disable local link mode on all notes
         DisableLocalLinkModeAll();
+        
+        HUD.Instance.SetMessageText("",false);
     }
 
     /// <summary>
@@ -190,7 +192,7 @@ public class NoteLinkManager : MonoBehaviour
         // Put all other notes in the scene except the startNote into local link mode
         LocalLinkModeAllExcept(startNote);
 
-        // TODO: On the startNote, hide all attach points except the one that was clicked and disable it to avoid linking to itself
+        HUD.Instance.SetMessageText("Please select which note to link to.\nPress B to cancel linking.", true);
     }
 
     public void EndLink(NoteLinkable endNote, AttachPoint endAttachPoint)
@@ -226,7 +228,7 @@ public class NoteLinkManager : MonoBehaviour
             _tempStartAttachPoint = AttachPoint.None;
             isGlobalLinkMode = false;
             DisableLocalLinkModeAll();
-
+            HUD.Instance.SetMessageText("",false);
             return;
         }
 
@@ -244,6 +246,8 @@ public class NoteLinkManager : MonoBehaviour
 
         // create the visual link between the two notes
         CreateLine(newLink);
+
+        HUD.Instance.SetMessageText("",false);
     }
 
     private void LocalLinkModeAllExcept(NoteLinkable note)
