@@ -8,10 +8,17 @@ public class NoteLinkManager : MonoBehaviour
 
     private Dictionary<string, NoteLinkable> notes = new();
 
-    private List<(string noteId, AttachPoint attachPoint, string linkedNoteId, AttachPoint linkedAttachPoint)> links = new();
+    private List<NoteLink> links = new();
 
+    // Dictionary to track visual line GameObjects for each NoteLink
+    private Dictionary<NoteLink, GameObject> linkVisuals = new();
 
     public bool isGlobalLinkMode = false;
+
+    public GameObject linePrefab;
+
+    [Tooltip("Parent object for spawned lines (for organization)")]
+    public Transform linesParent;
 
     private NoteLinkable _tempStartNote;
     private AttachPoint _tempStartAttachPoint;
@@ -31,11 +38,21 @@ public class NoteLinkManager : MonoBehaviour
         // Clear any existing notes when a new instance is created
         notes.Clear();
         links.Clear();
+        linkVisuals.Clear();
         isGlobalLinkMode = false;
         _tempStartNote = null;
         _tempStartAttachPoint = AttachPoint.None;
 
         Debug.Log("[NoteLinkManager] NoteLinkManager instance initialized and cleared");
+    }
+
+    private void Start()
+    {
+        if (!linesParent)
+        {
+            GameObject parentObj = new GameObject("Spawned Lines");
+            linesParent = parentObj.transform;
+        }
     }
 
     private void OnDestroy()
@@ -140,12 +157,23 @@ public class NoteLinkManager : MonoBehaviour
     /// </summary>
     private void RemoveLinksForNote(string noteId)
     {
-        var linksToRemove = links.Where(link => link.noteId == noteId || link.linkedNoteId == noteId).ToList();
+        var linksToRemove = links.Where(link => link.InvolvestNote(noteId)).ToList();
 
         foreach (var linkToRemove in linksToRemove)
         {
+            // Destroy the visual line GameObject if it exists
+            if (linkVisuals.TryGetValue(linkToRemove, out GameObject lineObject))
+            {
+                if (lineObject != null)
+                {
+                    Debug.Log($"[NoteLinkManager] Destroying visual line for deleted link: {linkToRemove}");
+                    Destroy(lineObject);
+                }
+                linkVisuals.Remove(linkToRemove);
+            }
+
             links.Remove(linkToRemove);
-            Debug.Log($"[NoteLinkManager] Removed link involving deleted note {noteId}: {linkToRemove.noteId}:{linkToRemove.attachPoint} -> {linkToRemove.linkedNoteId}:{linkToRemove.linkedAttachPoint}");
+            Debug.Log($"[NoteLinkManager] Removed link involving deleted note {noteId}: {linkToRemove}");
         }
     }
 
@@ -181,7 +209,29 @@ public class NoteLinkManager : MonoBehaviour
         }
 
         Debug.Log($"[NoteLinkManager] ended link on {endNote.NoteID} on attach point {endAttachPoint}");
-        links.Add((_tempStartNote.NoteID, _tempStartAttachPoint, endNote.NoteID, endAttachPoint));
+
+        var newLink = new NoteLink(_tempStartNote.NoteID, _tempStartAttachPoint, endNote.NoteID, endAttachPoint);
+
+        // Check if this link already exists
+        if (links.Any(existingLink =>
+            existingLink.sourceNoteId == newLink.sourceNoteId &&
+            existingLink.sourceAttachPoint == newLink.sourceAttachPoint &&
+            existingLink.targetNoteId == newLink.targetNoteId &&
+            existingLink.targetAttachPoint == newLink.targetAttachPoint))
+        {
+            Debug.LogWarning($"[NoteLinkManager] Link already exists: {newLink}. Link creation aborted.");
+
+            // Clean up the link mode state
+            _tempStartNote = null;
+            _tempStartAttachPoint = AttachPoint.None;
+            isGlobalLinkMode = false;
+            DisableLocalLinkModeAll();
+
+            return;
+        }
+
+        links.Add(newLink);
+
         _tempStartNote = null;
         _tempStartAttachPoint = AttachPoint.None;
         isGlobalLinkMode = false;
@@ -191,15 +241,9 @@ public class NoteLinkManager : MonoBehaviour
 
         // print all links for debugging
         PrintAllLinks();
-    }
 
-
-    /// <summary>
-    /// Rendered the link as line or similar between the two notes
-    /// </summary>
-    private void CreateLink()
-    {
-
+        // create the visual link between the two notes
+        CreateLine(newLink);
     }
 
     private void LocalLinkModeAllExcept(NoteLinkable note)
@@ -249,6 +293,9 @@ public class NoteLinkManager : MonoBehaviour
     // Clean up destroyed notes from the dictionary
     private void CleanupDestroyedNotes()
     {
+        // Clean up destroyed visual lines first
+        CleanupDestroyedVisualLines();
+
         var keysToRemove = new List<string>();
 
         foreach (var kvp in notes)
@@ -276,12 +323,12 @@ public class NoteLinkManager : MonoBehaviour
     public List<(AttachPoint attachPoint, string linkedNoteId, AttachPoint linkedAttachPoint)> GetAllLinksForNote(string noteId)
     {
         var outgoingLinks = links
-                  .Where(link => link.noteId == noteId)
-                    .Select(link => (link.attachPoint, link.linkedNoteId, link.linkedAttachPoint));
+            .Where(link => link.sourceNoteId == noteId)
+    .Select(link => (link.sourceAttachPoint, link.targetNoteId, link.targetAttachPoint));
 
         var incomingLinks = links
-       .Where(link => link.linkedNoteId == noteId)
-         .Select(link => (AttachPoint.None, link.noteId, link.attachPoint)); // Note: AttachPoint.None indicates this is an incoming link
+                .Where(link => link.targetNoteId == noteId)
+              .Select(link => (AttachPoint.None, link.sourceNoteId, link.sourceAttachPoint)); // Note: AttachPoint.None indicates this is an incoming link
 
         return outgoingLinks.Concat(incomingLinks).ToList();
     }
@@ -291,7 +338,7 @@ public class NoteLinkManager : MonoBehaviour
     /// </summary>
     public int GetLinkCountForNote(string noteId)
     {
-        return links.Count(link => link.noteId == noteId || link.linkedNoteId == noteId);
+        return links.Count(link => link.InvolvestNote(noteId));
     }
 
     // Method to list all registered notes for debugging
@@ -329,10 +376,125 @@ public class NoteLinkManager : MonoBehaviour
             for (int i = 0; i < links.Count; i++)
             {
                 var link = links[i];
-                Debug.Log($"[NoteLinkManager] Link {i}: {link.noteId}:{link.attachPoint} -> {link.linkedNoteId}:{link.linkedAttachPoint}");
+                Debug.Log($"[NoteLinkManager] Link {i}: {link}");
             }
         }
 
         Debug.Log("[NoteLinkManager] === End of Links ===");
+    }
+
+    /// <summary>
+    /// Cleans up any destroyed visual line GameObjects from the linkVisuals dictionary
+    /// </summary>
+    private void CleanupDestroyedVisualLines()
+    {
+        var linksToRemove = new List<NoteLink>();
+
+        foreach (var kvp in linkVisuals)
+        {
+            if (kvp.Value == null) // GameObject has been destroyed
+            {
+                linksToRemove.Add(kvp.Key);
+                Debug.Log($"[NoteLinkManager] Found destroyed visual line for link: {kvp.Key}");
+            }
+        }
+
+        foreach (var linkToRemove in linksToRemove)
+        {
+            linkVisuals.Remove(linkToRemove);
+            Debug.Log($"[NoteLinkManager] Cleaned up destroyed visual line reference for link: {linkToRemove}");
+        }
+
+        if (linksToRemove.Count > 0)
+        {
+            Debug.Log($"[NoteLinkManager] Cleaned up {linksToRemove.Count} destroyed visual line references");
+        }
+    }
+
+    /// <summary>
+    /// Removes a specific link and its visual representation
+    /// </summary>
+    public void RemoveLink(NoteLink linkToRemove)
+    {
+        if (links.Contains(linkToRemove))
+        {
+            // Destroy the visual line GameObject if it exists
+            if (linkVisuals.TryGetValue(linkToRemove, out GameObject lineObject))
+            {
+                if (lineObject != null)
+                {
+                    Debug.Log($"[NoteLinkManager] Destroying visual line for removed link: {linkToRemove}");
+                    Destroy(lineObject);
+                }
+                linkVisuals.Remove(linkToRemove);
+            }
+
+            links.Remove(linkToRemove);
+            Debug.Log($"[NoteLinkManager] Manually removed link: {linkToRemove}");
+        }
+        else
+        {
+            Debug.LogWarning($"[NoteLinkManager] Attempted to remove link that doesn't exist: {linkToRemove}");
+        }
+    }
+
+    private void CreateLine(NoteLink link)
+    {
+        if (linePrefab == null)
+        {
+            Debug.LogError("[NoteLinkManager] Line prefab is not assigned!");
+            return;
+        }
+
+        // Get the source and target notes
+        if (!notes.TryGetValue(link.sourceNoteId, out NoteLinkable sourceNote))
+        {
+            Debug.LogError($"[NoteLinkManager] Source note {link.sourceNoteId} not found when creating line");
+            return;
+        }
+
+        if (!notes.TryGetValue(link.targetNoteId, out NoteLinkable targetNote))
+        {
+            Debug.LogError($"[NoteLinkManager] Target note {link.targetNoteId} not found when creating line");
+            return;
+        }
+
+        // Get the attach point transforms
+        Transform sourceTransform = sourceNote.GetAttachPointTransform(link.sourceAttachPoint);
+        Transform targetTransform = targetNote.GetAttachPointTransform(link.targetAttachPoint);
+
+        if (sourceTransform == null)
+        {
+            Debug.LogError($"[NoteLinkManager] Source attach point transform {link.sourceAttachPoint} not found for note {link.sourceNoteId}");
+            return;
+        }
+
+        if (targetTransform == null)
+        {
+            Debug.LogError($"[NoteLinkManager] Target attach point transform {link.targetAttachPoint} not found for note {link.targetNoteId}");
+            return;
+        }
+
+        // Instantiate the line prefab
+        GameObject lineObject = Instantiate(linePrefab, linesParent);
+        lineObject.name = $"Line_{link.sourceNoteId}_{link.targetNoteId}";
+
+        // Get the LineController component and set the attach points
+        LineController lineController = lineObject.GetComponent<LineController>();
+        if (lineController != null)
+        {
+            lineController.startPoint = sourceTransform;
+            lineController.endPoint = targetTransform;
+
+            // Store the relationship between the link and its visual representation
+            linkVisuals[link] = lineObject;
+
+            Debug.Log($"[NoteLinkManager] Successfully created line between {link.sourceNoteId}:{link.sourceAttachPoint} and {link.targetNoteId}:{link.targetAttachPoint}");
+        }
+        else
+        {
+            Debug.LogError("[NoteLinkManager] LineController component not found on instantiated line prefab!");
+            Destroy(lineObject);
+        }
     }
 }

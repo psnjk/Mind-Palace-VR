@@ -45,3 +45,5 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   isGlobalLinkMode: 0
+  linePrefab: {fileID: 3060463255379205003, guid: edc9ed7bdf3f69d47b0910145c79edde, type: 3}
+  linesParent: {fileID: 0}

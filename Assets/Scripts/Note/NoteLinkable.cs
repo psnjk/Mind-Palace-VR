@@ -286,4 +286,15 @@ public class NoteLinkable : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Gets the transform for a specific attach point
+    /// </summary>
+    /// <param name="attachPoint">The attach point to get the transform for</param>
+    /// <returns>The transform for the attach point, or null if not found</returns>
+    public Transform GetAttachPointTransform(AttachPoint attachPoint)
+    {
+        _attachPointTransforms.TryGetValue(attachPoint, out Transform transform);
+        return transform;
+    }
 }
