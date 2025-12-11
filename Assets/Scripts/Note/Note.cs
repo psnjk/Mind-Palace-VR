@@ -1,5 +1,3 @@
-using System;
-using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -13,6 +11,7 @@ public class Note : MonoBehaviour
     private LookAtCamera _lookAtCameraComponent;
     private Rigidbody _rigidBody;
     private XRGrabInteractable _grabInteractable;
+    private NoteLinkable _noteLinkable;
 
     private string _instanceID;
 
@@ -41,6 +40,7 @@ public class Note : MonoBehaviour
         _lookAtCameraComponent = GetComponent<LookAtCamera>();
         _rigidBody = GetComponent<Rigidbody>();
         _grabInteractable = GetComponent<XRGrabInteractable>();
+        _noteLinkable = GetComponent<NoteLinkable>();
 
         if (_lookAtCameraComponent == null)
         {
@@ -65,6 +65,11 @@ public class Note : MonoBehaviour
             // Set up the grab interactable events
             _grabInteractable.selectEntered.AddListener(OnSelectEntered);
             _grabInteractable.selectExited.AddListener(OnSelectExited);
+        }
+
+        if (!_noteLinkable)
+        {
+            Debug.LogWarning($"[Note] No NoteLinkable component found on {gameObject.name}");
         }
 
         // Find the Delete Button child and assign the delete function to it
@@ -132,6 +137,9 @@ public class Note : MonoBehaviour
         _rigidBody.interpolation = RigidbodyInterpolation.Interpolate;
 
         _grabInteractable.movementType = XRGrabInteractable.MovementType.VelocityTracking;
+
+        // Deactivate any line colliders while moving the note to avoid interference
+        NoteLinkManager.Instance.DeactivateLineCollidersForNote(_noteLinkable.NoteID);
     }
 
     /// <summary>
@@ -148,6 +156,8 @@ public class Note : MonoBehaviour
 
         _grabInteractable.movementType = XRGrabInteractable.MovementType.Instantaneous;
 
+        // Reactivate any line colliders after moving the note
+        NoteLinkManager.Instance.RegenerateLineCollidersForNote(_noteLinkable.NoteID);
     }
 
     /// <summary>

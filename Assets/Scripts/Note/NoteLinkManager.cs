@@ -124,8 +124,8 @@ public class NoteLinkManager : MonoBehaviour
 
         // Disable local link mode on all notes
         DisableLocalLinkModeAll();
-        
-        HUD.Instance.SetMessageText("",false);
+
+        HUD.Instance.SetMessageText("", false);
     }
 
     /// <summary>
@@ -228,7 +228,7 @@ public class NoteLinkManager : MonoBehaviour
             _tempStartAttachPoint = AttachPoint.None;
             isGlobalLinkMode = false;
             DisableLocalLinkModeAll();
-            HUD.Instance.SetMessageText("",false);
+            HUD.Instance.SetMessageText("", false);
             return;
         }
 
@@ -247,7 +247,7 @@ public class NoteLinkManager : MonoBehaviour
         // create the visual link between the two notes
         CreateLine(newLink);
 
-        HUD.Instance.SetMessageText("",false);
+        HUD.Instance.SetMessageText("", false);
     }
 
     private void LocalLinkModeAllExcept(NoteLinkable note)
@@ -442,6 +442,50 @@ public class NoteLinkManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Regenerates mesh colliders for all lines associated with a specific note
+    /// </summary>
+    public void RegenerateLineCollidersForNote(string noteId)
+    {
+        var relevantLinks = links.Where(link => link.InvolvestNote(noteId));
+
+        foreach (var link in relevantLinks)
+        {
+            if (linkVisuals.TryGetValue(link, out GameObject lineObject) && lineObject != null)
+            {
+                var lineController = lineObject.GetComponent<LineController>();
+                if (lineController)
+                {
+                    lineController.GenerateMeshCollider();
+                }
+            }
+        }
+    }
+
+
+    /// <summary>
+    /// Deactivates mesh colliders for all lines associated with a specific note
+    /// </summary>
+    /// <param name="noteId"></param>
+    public void DeactivateLineCollidersForNote(string noteId)
+    {
+        
+        var relevantLinks = links.Where(link => link.InvolvestNote(noteId));
+
+        foreach (var link in relevantLinks)
+        {
+            if (linkVisuals.TryGetValue(link, out GameObject lineObject) && lineObject != null)
+            {
+                var lineController = lineObject.GetComponent<LineController>();
+                if (lineController)
+                {
+                    lineController.DeactivateMeshCollider();
+                }
+            }
+        }
+    }
+
+
     private void CreateLine(NoteLink link)
     {
         if (linePrefab == null)
@@ -489,6 +533,9 @@ public class NoteLinkManager : MonoBehaviour
         {
             lineController.startPoint = sourceTransform;
             lineController.endPoint = targetTransform;
+
+            // Set the associated link so the LineController and LineCanvas know which link they represent
+            lineController.SetAssociatedLink(link);
 
             // Store the relationship between the link and its visual representation
             linkVisuals[link] = lineObject;

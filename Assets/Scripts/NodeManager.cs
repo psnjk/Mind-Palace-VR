@@ -270,9 +270,10 @@ public class NodeManager : MonoBehaviour
         Debug.Log($"[NodeManager] Actual {prefabName} created successfully");
 
 
-        // If the spawned object is a note, register it with NoteLinkManager
+        // If the spawned object is a note, generate an ID for it and register it with NoteLinkManager
         var note = actualObject.GetComponent<NoteLinkable>();
-        if (note != null)
+        if (note)
+            note.NoteID = System.Guid.NewGuid().ToString();
             NoteLinkManager.Instance.RegisterNote(note);
 
         return actualObject;

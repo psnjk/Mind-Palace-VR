@@ -20,7 +20,7 @@ public enum AttachPoint
 
 public class NoteLinkable : MonoBehaviour
 {
-    public string NoteID { get; private set; }
+    public string NoteID { get; set; }
 
     private GameObject _handle;
     private GameObject _attachPointsCanvas;
@@ -37,14 +37,14 @@ public class NoteLinkable : MonoBehaviour
 
     private void Awake()
     {
-        NoteID = System.Guid.NewGuid().ToString();
-        Debug.Log($"[NoteLinkable] NoteID: {NoteID}");
+        //NoteID = System.Guid.NewGuid().ToString();
+        //Debug.Log($"[NoteLinkable] NoteID: {NoteID}");
 
         // Register with the manager
-        if (NoteLinkManager.Instance)
-        {
-            NoteLinkManager.Instance.RegisterNote(this);
-        }
+        //if (NoteLinkManager.Instance)
+        //{
+        //    NoteLinkManager.Instance.RegisterNote(this);
+        //}
     }
 
     private void OnDestroy()
