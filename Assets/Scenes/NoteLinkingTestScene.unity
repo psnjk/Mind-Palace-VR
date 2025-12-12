@@ -235,33 +235,9 @@ PrefabInstance:
       propertyPath: startPoint
       value: 
       objectReference: {fileID: 930662201}
-    - target: {fileID: 7672601057440772768, guid: edc9ed7bdf3f69d47b0910145c79edde, type: 3}
-      propertyPath: showCanvasAction.m_Action.m_Name
-      value: Show Canvas
-      objectReference: {fileID: 0}
     - target: {fileID: 8194816091973845152, guid: edc9ed7bdf3f69d47b0910145c79edde, type: 3}
       propertyPath: m_AdditionalShaderChannelsFlag
       value: 25
-      objectReference: {fileID: 0}
-    - target: {fileID: 8616932714763893980, guid: edc9ed7bdf3f69d47b0910145c79edde, type: 3}
-      propertyPath: m_Materials.Array.size
-      value: 1
-      objectReference: {fileID: 0}
-    - target: {fileID: 8616932714763893980, guid: edc9ed7bdf3f69d47b0910145c79edde, type: 3}
-      propertyPath: m_Parameters.colorGradient.key0.b
-      value: 0.3018868
-      objectReference: {fileID: 0}
-    - target: {fileID: 8616932714763893980, guid: edc9ed7bdf3f69d47b0910145c79edde, type: 3}
-      propertyPath: m_Parameters.colorGradient.key0.g
-      value: 0.3018868
-      objectReference: {fileID: 0}
-    - target: {fileID: 8616932714763893980, guid: edc9ed7bdf3f69d47b0910145c79edde, type: 3}
-      propertyPath: m_Parameters.colorGradient.key0.r
-      value: 0.3018868
-      objectReference: {fileID: 0}
-    - target: {fileID: 8616932714763893980, guid: edc9ed7bdf3f69d47b0910145c79edde, type: 3}
-      propertyPath: m_Parameters.colorGradient.m_ColorSpace
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9194985765218060019, guid: edc9ed7bdf3f69d47b0910145c79edde, type: 3}
       propertyPath: m_LocalPosition.x

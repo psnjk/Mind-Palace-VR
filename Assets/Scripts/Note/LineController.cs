@@ -79,6 +79,11 @@ public class LineController : MonoBehaviour
         _lineRenderer.SetPosition(0, startPoint.position);
         _lineRenderer.SetPosition(1, endPoint.position);
 
+
+        
+        _lineRenderer.startColor = normalColor;
+        _lineRenderer.endColor = normalColor;
+
     }
 
     private void SetupSimpleInteractable()
@@ -360,7 +365,9 @@ public class LineController : MonoBehaviour
     /// <param name="status"></param>
     private void Highlight(bool status)
     {
-        _lineRenderer.material.SetColor("_BaseColor", status ? highlightColor : normalColor);
+        Color targetColor = status ? highlightColor : normalColor;
+        _lineRenderer.startColor = targetColor;
+        _lineRenderer.endColor = targetColor;
     }
 
 }
