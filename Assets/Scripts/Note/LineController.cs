@@ -35,6 +35,13 @@ public class LineController : MonoBehaviour
     private bool _buttonWasPressed = false;
     private IXRHoverInteractor _currentInteractor;
 
+    [Header("Collider Settings")]
+    [Tooltip("Distance in Unity units to exclude from collider at start")]
+    public float startDeadzoneDistance = 0.05f;
+
+    [Tooltip("Distance in Unity units to exclude from collider at end")]
+    public float endDeadzoneDistance = 0.05f;
+
     /// <summary>
     /// Sets the NoteLink that this LineController represents. This should be called when the line is created.
     /// </summary>
@@ -80,7 +87,7 @@ public class LineController : MonoBehaviour
         _lineRenderer.SetPosition(1, endPoint.position);
 
 
-        
+
         _lineRenderer.startColor = normalColor;
         _lineRenderer.endColor = normalColor;
 
@@ -296,8 +303,8 @@ public class LineController : MonoBehaviour
 
     /// <summary>
     /// Generates a MeshCollider along the line which will be used by XRSimpleInteractable for hover and selection.
+    /// Supports deadzones at the extremities where no collider will be generated.
     /// </summary>
-    // Taken from https://github.com/llamacademy/line-renderer-collider/blob/main/Assets/Scripts/LineRendererSmoother.cs
     public void GenerateMeshCollider()
     {
         _meshCollider = GetComponent<MeshCollider>();
@@ -309,15 +316,50 @@ public class LineController : MonoBehaviour
 
         _meshCollider.enabled = true;
 
+        // Store original line positions
+        Vector3 originalStart = _lineRenderer.GetPosition(0);
+        Vector3 originalEnd = _lineRenderer.GetPosition(1);
+
+        // Calculate line properties
+        Vector3 lineDirection = (originalEnd - originalStart);
+        float totalLength = lineDirection.magnitude;
+        Vector3 normalizedDirection = lineDirection.normalized;
+
+        // Ensure deadzones don't exceed total line length
+        float totalDeadzoneDistance = startDeadzoneDistance + endDeadzoneDistance;
+        if (totalDeadzoneDistance >= totalLength)
+        {
+            Debug.LogWarning($"[LineController] Total deadzone distance ({totalDeadzoneDistance:F3}) >= line length ({totalLength:F3}). Adjusting deadzones.");
+            float scale = (totalLength * 0.9f) / totalDeadzoneDistance;
+            startDeadzoneDistance *= scale;
+            endDeadzoneDistance *= scale;
+            Debug.LogWarning($"[LineController] Adjusted deadzones: start={startDeadzoneDistance:F3}, end={endDeadzoneDistance:F3}");
+        }
+
+        // Calculate new start and end positions excluding deadzones
+        Vector3 colliderStart = originalStart + normalizedDirection * startDeadzoneDistance;
+        Vector3 colliderEnd = originalEnd - normalizedDirection * endDeadzoneDistance;
+
+        // Temporarily modify line renderer positions for mesh generation
+        _lineRenderer.SetPosition(0, colliderStart);
+        _lineRenderer.SetPosition(1, colliderEnd);
+
+        // Generate mesh with the modified positions
         Mesh mesh = new Mesh();
         _lineRenderer.BakeMesh(mesh, true);
 
         Debug.Log($"[LineController] Generated mesh has {mesh.vertexCount} vertices and {mesh.triangles.Length / 3} triangles");
+        Debug.Log($"[LineController] Deadzone distances: start={startDeadzoneDistance:F3}u, end={endDeadzoneDistance:F3}u");
+        Debug.Log($"[LineController] Collider length: {Vector3.Distance(colliderStart, colliderEnd):F3}u / {totalLength:F3}u total");
+
+        // Restore original line positions
+        _lineRenderer.SetPosition(0, originalStart);
+        _lineRenderer.SetPosition(1, originalEnd);
 
         // Check if mesh is valid
         if (mesh.vertexCount == 0)
         {
-            Debug.LogError("[LineController] Generated mesh has no vertices! Check LineRenderer settings.");
+            Debug.LogError("[LineController] Generated mesh has no vertices! Check LineRenderer settings or deadzone values.");
             return;
         }
 
@@ -331,19 +373,15 @@ public class LineController : MonoBehaviour
         {
             newIndices[i] = meshIndices[i];
             newIndices[meshIndices.Length + i] = meshIndices[j];
+            j--;
         }
         mesh.SetIndices(newIndices, MeshTopology.Triangles, 0);
 
         _meshCollider.sharedMesh = mesh;
 
-        // Make sure the collider is convex for better performance (optional)
-        // _meshCollider.convex = false; // Keep as non-convex for precise line collision
-
-        Debug.Log($"[LineController] MeshCollider generated successfully. Bounds: {_meshCollider.bounds}");
-
-        // Debug: Check LineRenderer settings
-        Debug.Log($"[LineController] LineRenderer width: start={_lineRenderer.startWidth}, end={_lineRenderer.endWidth}");
-        Debug.Log($"[LineController] LineRenderer positions: {_lineRenderer.GetPosition(0)} to {_lineRenderer.GetPosition(1)}");
+        Debug.Log($"[LineController] MeshCollider generated successfully with deadzones. Bounds: {_meshCollider.bounds}");
+        float colliderLength = Vector3.Distance(colliderStart, colliderEnd);
+        Debug.Log($"[LineController] Collider covers {colliderLength:F3}u of {totalLength:F3}u total line length");
     }
 
 
