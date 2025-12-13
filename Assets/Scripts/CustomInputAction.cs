@@ -13,6 +13,9 @@ public class CustomInputAction : MonoBehaviour
     // Create Node (Primary Button)
     public InputActionReference createNodeButton;
 
+    // Cancel Note Linking (Secondary Button)
+    public InputActionReference cancelNoteLinkingButton;
+
     [Header("Node Spawning")]
     [Tooltip("Reference to the NodeManager to handle note spawning")]
     [SerializeField] private NodeManager nodeManager;
@@ -27,6 +30,8 @@ public class CustomInputAction : MonoBehaviour
         // Subscribe to primary button press and release
         createNodeButton.action.started += OnPrimaryButtonPressed;
         createNodeButton.action.canceled += OnPrimaryButtonReleased;
+
+        cancelNoteLinkingButton.action.canceled += OnSecondaryButtonReleased; 
 
         // Find NodeManager if not assigned
         if (!nodeManager)
@@ -104,6 +109,15 @@ public class CustomInputAction : MonoBehaviour
         }
 
         _previewStarted = false;
+    }
+
+    void OnSecondaryButtonReleased(InputAction.CallbackContext context)
+    {
+        Debug.Log("[CustomInputAction] Secondary Button RELEASED");
+        if (NoteLinkManager.Instance && NoteLinkManager.Instance.isGlobalLinkMode)
+        {
+            NoteLinkManager.Instance.CancelActiveLink();
+        }
     }
 
     void OnDestroy()

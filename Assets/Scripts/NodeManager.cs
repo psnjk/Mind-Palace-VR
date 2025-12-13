@@ -25,6 +25,7 @@ public class NodeManager : MonoBehaviour
     private GameObject _currentPreview;
     private bool _isPreviewActive = false;
 
+
     void Start()
     {
         // Create notes parent if it doesn't exist
@@ -267,6 +268,13 @@ public class NodeManager : MonoBehaviour
         GameObject selectedPrefab = GetSelectedPrefab();
         GameObject actualObject = Instantiate(selectedPrefab, finalPosition, finalRotation, nodesParent);
         Debug.Log($"[NodeManager] Actual {prefabName} created successfully");
+
+
+        // If the spawned object is a note, generate an ID for it and register it with NoteLinkManager
+        var note = actualObject.GetComponent<NoteLinkable>();
+        if (note)
+            note.NoteID = System.Guid.NewGuid().ToString();
+            NoteLinkManager.Instance.RegisterNote(note);
 
         return actualObject;
     }

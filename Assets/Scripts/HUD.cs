@@ -1,3 +1,5 @@
+using System;
+using TMPro;
 using UnityEngine;
 
 public class HUD : MonoBehaviour
@@ -6,6 +8,7 @@ public class HUD : MonoBehaviour
 
     private GameObject microphoneIcon;
     private GameObject transcribeIcon;
+    private GameObject messageText;
 
     void Awake()
     {
@@ -16,6 +19,8 @@ public class HUD : MonoBehaviour
 
         microphoneIcon = transform.Find("Microphone Icon").gameObject;
         transcribeIcon = transform.Find("Transcribe Icon").gameObject;
+        messageText = transform.Find("Message").gameObject;
+        
 
         if (!microphoneIcon)
         {
@@ -25,6 +30,11 @@ public class HUD : MonoBehaviour
         if (!transcribeIcon)
         {
             Debug.LogWarning("[HUD] Transcribe Icon not found.");
+        }
+
+        if (!messageText)
+        {
+            Debug.LogWarning("[HUD] Message not found.");
         }
     }
 
@@ -44,5 +54,17 @@ public class HUD : MonoBehaviour
     public void SetTranscribeIcon(bool status)
     {
         if (transcribeIcon) transcribeIcon.SetActive(status);
+    }
+
+    /// <summary>
+    /// Sets a message that will be shown to the user on the HUD
+    /// </summary>
+    public void SetMessageText(String message, bool status)
+    {
+        if (messageText)
+        {
+            messageText.GetComponent<TMP_Text>().text = message;
+            messageText.SetActive(status);
+        }
     }
 }
