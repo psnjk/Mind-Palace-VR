@@ -2573,6 +2573,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   fontSize: 52
+  initialDelay: 0.5
+  repeatRate: 0.05
 --- !u!1 &5737401878642043322
 GameObject:
   m_ObjectHideFlags: 0

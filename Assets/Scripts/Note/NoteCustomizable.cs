@@ -1,7 +1,9 @@
 using System;
+using System.Collections;
 using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 
@@ -14,11 +16,18 @@ public class NoteCustomizable : MonoBehaviour
     private GameObject _customizationCanvas;
     private Toggle _autoSizeToggle;
     private TMP_Text _inputFieldText;
+    private TMP_InputField _inputField;
     private TMP_Text _fontSizeText;
     private GameObject _ONBackground;
 
     public float fontSize;
 
+    // Continuous button press settings
+    [SerializeField] private float initialDelay = 0.5f; // Initial delay before continuous action starts
+    [SerializeField] private float repeatRate = 0.1f; // Rate of repetition while holding
+
+    private Coroutine _fontIncreaseCoroutine;
+    private Coroutine _fontDecreaseCoroutine;
 
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
@@ -28,7 +37,7 @@ public class NoteCustomizable : MonoBehaviour
         SetupCustomizationCanvas();
         SetupCustomizeButton();
         SetupFontIncreaseButton();
-        SetupFontDecreaseButton();
+        SetupFontDecreaseButton();    
     }
 
     // Update is called once per frame
@@ -68,7 +77,7 @@ public class NoteCustomizable : MonoBehaviour
     /// </summary>
     private void SetupCustomizeButton()
     {
-        
+
         try
         {
             _customizeButton = transform.Find("Note Canvas").Find("Background").Find("Customize Button").GetComponent<Button>();
@@ -106,6 +115,27 @@ public class NoteCustomizable : MonoBehaviour
             return;
         }
 
+        try
+        {
+            _inputField = transform.Find("Note Canvas").Find("Background").Find("InputField").GetComponent<TMP_InputField>();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[NoteCustomizable] Failed to find input field: {ex.Message}");
+            return;
+        }
+
+        _inputFieldText.fontSizeMax = fontSize;
+        _inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
+
+        
+    }
+
+    private void OnInputFieldValueChanged(string _)
+    {
+        float newFontSize = Mathf.FloorToInt(_inputFieldText.fontSize);
+        fontSize = newFontSize;
+        _fontSizeText.text = fontSize.ToString();
         _inputFieldText.fontSizeMax = fontSize;
     }
 
@@ -144,18 +174,90 @@ public class NoteCustomizable : MonoBehaviour
             return;
         }
 
-        _fontIncreaseButton.onClick.AddListener(IncrementFontSize); 
+        // Add EventTrigger component for continuous press detection
+        EventTrigger eventTrigger = _fontIncreaseButton.gameObject.GetComponent<EventTrigger>();
+        if (eventTrigger == null)
+        {
+            eventTrigger = _fontIncreaseButton.gameObject.AddComponent<EventTrigger>();
+        }
+
+        // Add pointer down event
+        EventTrigger.Entry pointerDownEntry = new EventTrigger.Entry();
+        pointerDownEntry.eventID = EventTriggerType.PointerDown;
+        pointerDownEntry.callback.AddListener((data) => { StartFontIncrease(); });
+        eventTrigger.triggers.Add(pointerDownEntry);
+
+        // Add pointer up event
+        EventTrigger.Entry pointerUpEntry = new EventTrigger.Entry();
+        pointerUpEntry.eventID = EventTriggerType.PointerUp;
+        pointerUpEntry.callback.AddListener((data) => { StopFontIncrease(); });
+        eventTrigger.triggers.Add(pointerUpEntry);
+
+        // Add pointer exit event (in case user drags off button)
+        EventTrigger.Entry pointerExitEntry = new EventTrigger.Entry();
+        pointerExitEntry.eventID = EventTriggerType.PointerExit;
+        pointerExitEntry.callback.AddListener((data) => { StopFontIncrease(); });
+        eventTrigger.triggers.Add(pointerExitEntry);
     }
 
+    /// <summary>
+    /// Starts continuous font size increase
+    /// </summary>
+    private void StartFontIncrease()
+    {
+        if (_fontIncreaseCoroutine != null)
+        {
+            StopCoroutine(_fontIncreaseCoroutine);
+        }
+        _fontIncreaseCoroutine = StartCoroutine(ContinuousFontIncrease());
+    }
+
+    /// <summary>
+    /// Stops continuous font size increase
+    /// </summary>
+    private void StopFontIncrease()
+    {
+        if (_fontIncreaseCoroutine != null)
+        {
+            StopCoroutine(_fontIncreaseCoroutine);
+            _fontIncreaseCoroutine = null;
+        }
+    }
+
+    /// <summary>
+    /// Coroutine for continuous font size increase
+    /// </summary>
+    private IEnumerator ContinuousFontIncrease()
+    {
+        // First increment happens immediately
+        IncrementFontSize();
+
+        // Wait for initial delay
+        yield return new WaitForSeconds(initialDelay);
+
+        // Continue incrementing at repeat rate
+        while (true)
+        {
+            IncrementFontSize();
+            yield return new WaitForSeconds(repeatRate);
+        }
+    }
 
     /// <summary>
     /// Increments the font size by 1
     /// </summary>
     private void IncrementFontSize()
     {
-
         fontSize += 1;
-        _fontSizeText.text = fontSize.ToString(); 
+
+        // to limit font size due to auto size constraints
+        float currentFontSize = Mathf.FloorToInt(_inputFieldText.fontSize);
+        if (fontSize > currentFontSize + 1)
+        {
+            fontSize = currentFontSize;
+        }
+
+        _fontSizeText.text = fontSize.ToString();
         _inputFieldText.fontSizeMax = fontSize;
     }
 
@@ -174,18 +276,88 @@ public class NoteCustomizable : MonoBehaviour
             return;
         }
 
-        _fontDecreaseButton.onClick.AddListener(DecrementFontSize); 
+        // Add EventTrigger component for continuous press detection
+        EventTrigger eventTrigger = _fontDecreaseButton.gameObject.GetComponent<EventTrigger>();
+        if (eventTrigger == null)
+        {
+            eventTrigger = _fontDecreaseButton.gameObject.AddComponent<EventTrigger>();
+        }
+
+        // Add pointer down event
+        EventTrigger.Entry pointerDownEntry = new EventTrigger.Entry();
+        pointerDownEntry.eventID = EventTriggerType.PointerDown;
+        pointerDownEntry.callback.AddListener((data) => { StartFontDecrease(); });
+        eventTrigger.triggers.Add(pointerDownEntry);
+
+        // Add pointer up event
+        EventTrigger.Entry pointerUpEntry = new EventTrigger.Entry();
+        pointerUpEntry.eventID = EventTriggerType.PointerUp;
+        pointerUpEntry.callback.AddListener((data) => { StopFontDecrease(); });
+        eventTrigger.triggers.Add(pointerUpEntry);
+
+        // Add pointer exit event (in case user drags off button)
+        EventTrigger.Entry pointerExitEntry = new EventTrigger.Entry();
+        pointerExitEntry.eventID = EventTriggerType.PointerExit;
+        pointerExitEntry.callback.AddListener((data) => { StopFontDecrease(); });
+        eventTrigger.triggers.Add(pointerExitEntry);
     }
 
+    /// <summary>
+    /// Starts continuous font size decrease
+    /// </summary>
+    private void StartFontDecrease()
+    {
+        if (_fontDecreaseCoroutine != null)
+        {
+            StopCoroutine(_fontDecreaseCoroutine);
+        }
+        _fontDecreaseCoroutine = StartCoroutine(ContinuousFontDecrease());
+    }
+
+    /// <summary>
+    /// Stops continuous font size decrease
+    /// </summary>
+    private void StopFontDecrease()
+    {
+        if (_fontDecreaseCoroutine != null)
+        {
+            StopCoroutine(_fontDecreaseCoroutine);
+            _fontDecreaseCoroutine = null;
+        }
+    }
+
+    /// <summary>
+    /// Coroutine for continuous font size decrease
+    /// </summary>
+    private IEnumerator ContinuousFontDecrease()
+    {
+        // First decrement happens immediately
+        DecrementFontSize();
+
+        // Wait for initial delay
+        yield return new WaitForSeconds(initialDelay);
+
+        // Continue decrementing at repeat rate
+        while (true)
+        {
+            DecrementFontSize();
+            yield return new WaitForSeconds(repeatRate);
+        }
+    }
 
     /// <summary>
     /// Decrements the font size by 1
     /// </summary>
     private void DecrementFontSize()
     {
-
         fontSize -= 1;
-        _fontSizeText.text = fontSize.ToString(); 
+        
+        if (fontSize <= _inputFieldText.fontSizeMin)
+        {
+            fontSize = Mathf.CeilToInt(_inputFieldText.fontSizeMin);
+        }
+
+        _fontSizeText.text = fontSize.ToString();
         _inputFieldText.fontSizeMax = fontSize;
     }
 }
