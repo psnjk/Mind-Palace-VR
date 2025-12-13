@@ -118,6 +118,7 @@ public class NoteLinkManager : MonoBehaviour
     {
         Debug.Log("[NoteLinkManager] Canceling active link operation");
 
+        _tempStartNote?.ShowAllAttachPointButtons();
         _tempStartNote = null;
         _tempStartAttachPoint = AttachPoint.None;
         isGlobalLinkMode = false;
@@ -224,6 +225,7 @@ public class NoteLinkManager : MonoBehaviour
             Debug.LogWarning($"[NoteLinkManager] Link already exists: {newLink}. Link creation aborted.");
 
             // Clean up the link mode state
+            _tempStartNote.ShowAllAttachPointButtons();
             _tempStartNote = null;
             _tempStartAttachPoint = AttachPoint.None;
             isGlobalLinkMode = false;
@@ -233,7 +235,7 @@ public class NoteLinkManager : MonoBehaviour
         }
 
         links.Add(newLink);
-
+        _tempStartNote.ShowAllAttachPointButtons();
         _tempStartNote = null;
         _tempStartAttachPoint = AttachPoint.None;
         isGlobalLinkMode = false;

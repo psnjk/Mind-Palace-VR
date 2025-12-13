@@ -246,6 +246,7 @@ public class NoteLinkable : MonoBehaviour
             else // if the link was started on the note
             {
                 NoteLinkManager.Instance.StartLink(this, attachPoint);
+                HideAllAttachPointButtonsExcept(attachPoint);
             }
         }
         else
@@ -307,5 +308,31 @@ public class NoteLinkable : MonoBehaviour
     {
         _attachPointTransforms.TryGetValue(attachPoint, out Transform transform);
         return transform;
+    }
+
+    /// <summary>
+    /// Deactivates all attach point buttons except the specified one, used for start link to indicate selection
+    /// </summary>
+    /// <param name="attachPoint"></param>
+    private void HideAllAttachPointButtonsExcept(AttachPoint attachPoint)
+    {
+        foreach (var buttonPair in _attachPointButtons)
+        {
+            if (buttonPair.Key != attachPoint)
+            {
+                buttonPair.Value.gameObject.SetActive(false);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Shows all attach point buttons, used to reset the UI
+    /// </summary>
+    public void ShowAllAttachPointButtons()
+    {
+        foreach (var buttonPair in _attachPointButtons)
+        {
+            buttonPair.Value.gameObject.SetActive(true);
+        }
     }
 }
