@@ -559,6 +559,7 @@ GameObject:
   - component: {fileID: 7967374908923014526}
   - component: {fileID: 6332956532087715360}
   - component: {fileID: 8721488596385250665}
+  - component: {fileID: 2559116162998610211}
   m_Layer: 0
   m_Name: Link Button
   m_TagString: Untagged
@@ -680,6 +681,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &2559116162998610211
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1678383465463348043}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ec095acc4e8dd04e908aee312c9c5c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverScaleMultiplier: 3
+  scaleAnimationSpeed: 8
+  enableDebugLogging: 0
 --- !u!1 &2025126374490703081
 GameObject:
   m_ObjectHideFlags: 0
@@ -1146,6 +1162,7 @@ GameObject:
   - component: {fileID: 3203520350779648625}
   - component: {fileID: 4144318365031042178}
   - component: {fileID: 7654723858456609502}
+  - component: {fileID: 3852265899728934160}
   m_Layer: 0
   m_Name: Delete Button
   m_TagString: Untagged
@@ -1267,6 +1284,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &3852265899728934160
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3154621932399421614}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ec095acc4e8dd04e908aee312c9c5c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverScaleMultiplier: 3
+  scaleAnimationSpeed: 8
+  enableDebugLogging: 0
 --- !u!1 &3391282951380042099
 GameObject:
   m_ObjectHideFlags: 0
@@ -2506,7 +2538,7 @@ Transform:
   m_GameObject: {fileID: 7526327591512268450}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: -0.281, z: 0}
+  m_LocalPosition: {x: 0, y: -0.2474, z: 0}
   m_LocalScale: {x: 0.1, y: 0.02, z: 0.01}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2598,6 +2630,7 @@ GameObject:
   - component: {fileID: 5515241643856627051}
   - component: {fileID: 5922540420995815766}
   - component: {fileID: 6149516907251794327}
+  - component: {fileID: 151821501770387738}
   m_Layer: 0
   m_Name: Pin Button
   m_TagString: Untagged
@@ -2719,6 +2752,21 @@ MonoBehaviour:
           m_StringArgument: 
           m_BoolArgument: 0
         m_CallState: 2
+--- !u!114 &151821501770387738
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7942784111611024754}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6ec095acc4e8dd04e908aee312c9c5c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  hoverScaleMultiplier: 3
+  scaleAnimationSpeed: 8
+  enableDebugLogging: 0
 --- !u!1 &8569580658541335142
 GameObject:
   m_ObjectHideFlags: 0

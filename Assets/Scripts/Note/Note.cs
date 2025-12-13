@@ -6,7 +6,6 @@ using UnityEngine.XR.Interaction.Toolkit.Interactables;
 
 public class Note : MonoBehaviour
 {
-
     private bool _lookAtCamera = true;
     private LookAtCamera _lookAtCameraComponent;
     private Rigidbody _rigidBody;
@@ -98,12 +97,6 @@ public class Note : MonoBehaviour
         OnRelease();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-    }
-
-
     [ContextMenu("Test Insert Text")]
     public void TestInsertText()
     {
@@ -122,7 +115,6 @@ public class Note : MonoBehaviour
             inputField.selectionFocusPosition = inputField.caretPosition;
         }
     }
-
 
     /// <summary>
     /// Due to some XR Interaction Toolkit quirks, we need to have explicit onGrab and onRelease methods to handle some XR Grab Interactable and RigidBody parameters to make sure that the notes don't go through other objects when being grabbed but still look at the camera when released and not fly out in zero gravity.
@@ -232,6 +224,14 @@ public class Note : MonoBehaviour
         {
             deleteButton.onClick.RemoveAllListeners();
             deleteButton.onClick.AddListener(DeleteNote);
+
+            // Add ExpandingButton component if it doesn't exist
+            ExpandingButton expandingButton = deleteButtonTransform.GetComponent<ExpandingButton>();
+            if (expandingButton == null)
+            {
+                expandingButton = deleteButtonTransform.gameObject.AddComponent<ExpandingButton>();
+            }
+
             Debug.Log($"[Note] Successfully connected Delete Button on {gameObject.name}");
         }
         else
@@ -271,6 +271,14 @@ public class Note : MonoBehaviour
         {
             pinButton.onClick.RemoveAllListeners();
             pinButton.onClick.AddListener(ToggleLookAtCamera);
+
+            // Add ExpandingButton component if it doesn't exist
+            ExpandingButton expandingButton = pinButtonTransform.GetComponent<ExpandingButton>();
+            if (expandingButton == null)
+            {
+                expandingButton = pinButtonTransform.gameObject.AddComponent<ExpandingButton>();
+            }
+
             Debug.Log($"[Note] Successfully connected Pin Button on {gameObject.name}");
         }
         else

@@ -136,7 +136,6 @@ public class LineController : MonoBehaviour
         _isHovered = true;
         _currentInteractor = args.interactorObject;
         Highlight(true);
-        // TODO: make the line highlight or something
     }
 
     private void OnLineHoverExited(HoverExitEventArgs args)
@@ -145,15 +144,6 @@ public class LineController : MonoBehaviour
         _isHovered = false;
         _currentInteractor = null;
         Highlight(false);
-
-        /*
-        // Hide canvas when no longer hovering
-        if (_lineCanvas != null)
-        {
-            _lineCanvas.gameObject.SetActive(false);
-            Debug.Log($"[LineController] Canvas hidden after hover exit");
-        }
-        */
     }
 
     // Update is called once per frame

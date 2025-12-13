@@ -31,7 +31,6 @@ public class NoteLinkable : MonoBehaviour
     // Dictionary to store attach point buttons
     private Dictionary<AttachPoint, Button> _attachPointButtons = new Dictionary<AttachPoint, Button>();
 
-
     // Dictionary to store the physical attach point transforms with which the lines will be rendered
     private Dictionary<AttachPoint, Transform> _attachPointTransforms = new Dictionary<AttachPoint, Transform>();
 
@@ -75,7 +74,6 @@ public class NoteLinkable : MonoBehaviour
         SetupAttachPointTransforms();
     }
 
-
     private void GetHandle()
     {
         Transform handleTransform = transform.Find("Handle");
@@ -114,7 +112,6 @@ public class NoteLinkable : MonoBehaviour
         _attachPointsCanvas?.SetActive(!_isLocalLinkMode);
     }
 
-
     public void SetLocalLinkMode(bool active)
     {
         Debug.Log($"[NoteLinkable] SetLocalLinkMode called for {NoteID}, setting to: {active}");
@@ -126,7 +123,6 @@ public class NoteLinkable : MonoBehaviour
 
         Debug.Log($"[NoteLinkable] After SetLocalLinkMode - Handle active: {_handle?.activeInHierarchy}, AttachPointsCanvas active: {_attachPointsCanvas?.activeInHierarchy}");
     }
-
 
     /// <summary>
     /// Sets up the Link Button as "Note Canvas"->"Background"->"Link Button"
@@ -144,7 +140,7 @@ public class NoteLinkable : MonoBehaviour
         if (background == null)
         {
             Debug.LogWarning(
-                $"[NoteLinkable] No child named 'Background' found under Note Canvas on {gameObject.name}");
+               $"[NoteLinkable] No child named 'Background' found under Note Canvas on {gameObject.name}");
             return;
         }
 
@@ -152,7 +148,7 @@ public class NoteLinkable : MonoBehaviour
         if (linkButtonTransform == null)
         {
             Debug.LogWarning(
-                $"[NoteLinkable] No child named 'Link Button' found under Background on {gameObject.name}");
+                  $"[NoteLinkable] No child named 'Link Button' found under Background on {gameObject.name}");
             return;
         }
 
@@ -163,12 +159,20 @@ public class NoteLinkable : MonoBehaviour
         {
             linkButton.onClick.RemoveAllListeners();
             linkButton.onClick.AddListener(ToggleLocalLinkMode);
+
+            // Add ExpandingButton component if it doesn't exist
+            ExpandingButton expandingButton = linkButtonTransform.GetComponent<ExpandingButton>();
+            if (expandingButton == null)
+            {
+                expandingButton = linkButtonTransform.gameObject.AddComponent<ExpandingButton>();
+            }
+
             Debug.Log($"[NoteLinkable] Successfully connected Link Button on {gameObject.name}");
         }
         else
         {
             Debug.LogWarning(
-                $"[NoteLinkable] Link Button found on {gameObject.name}, but it doesn't have a Button component!");
+              $"[NoteLinkable] Link Button found on {gameObject.name}, but it doesn't have a Button component!");
         }
     }
 
@@ -187,7 +191,7 @@ public class NoteLinkable : MonoBehaviour
         foreach (AttachPoint attachPoint in System.Enum.GetValues(typeof(AttachPoint)))
         {
             if (attachPoint == AttachPoint.None) continue; // Skip None value
-         
+
             string buttonName = attachPoint.ToString();
             Transform buttonTransform = _attachPointsCanvas.transform.Find(buttonName);
 
@@ -203,6 +207,13 @@ public class NoteLinkable : MonoBehaviour
                     AttachPoint currentAttachPoint = attachPoint; // Capture for closure
                     button.onClick.RemoveAllListeners();
                     button.onClick.AddListener(() => OnAttachPointButtonClicked(currentAttachPoint));
+
+                    // Add ExpandingButton component if it doesn't exist
+                    ExpandingButton expandingButton = buttonTransform.GetComponent<ExpandingButton>();
+                    if (expandingButton == null)
+                    {
+                        expandingButton = buttonTransform.gameObject.AddComponent<ExpandingButton>();
+                    }
 
                     Debug.Log($"[NoteLinkable] Successfully setup {buttonName} button for {NoteID}");
                 }
