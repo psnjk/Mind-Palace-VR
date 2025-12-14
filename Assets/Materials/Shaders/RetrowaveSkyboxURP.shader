@@ -12,7 +12,7 @@ Shader "Custom/RetrowaveSkyboxURP"
         _ScanlineSharpness ("Scanline Sharpness", Range(1, 20)) = 10
         _ScanlineSpeed ("Scanline Drift Speed", Range(0, 5)) = 0.5
         _ScanlineJitter ("Scanline Jitter", Range(0, 0.2)) = 0.05
-        _ScanlineStart ("Scanline Start Height (0–1)", Range(0, 1)) = 0.7
+        _ScanlineStart ("Scanline Start Height", Range(0, 1)) = 0.7
         _ScanlineThicknessBoost ("Bottom Thickness Boost", Range(0, 5)) = 0.5
 
         _GlowStrength ("Sun Glow", Range(0, 5)) = 1.5
@@ -31,6 +31,7 @@ Shader "Custom/RetrowaveSkyboxURP"
             "RenderType"="Background"
             "RenderPipeline"="UniversalPipeline"
         }
+
         Cull Off
         ZWrite Off
 
@@ -39,17 +40,22 @@ Shader "Custom/RetrowaveSkyboxURP"
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
+            #pragma multi_compile_instancing
+
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityInput.hlsl"
 
             struct Attributes
             {
                 float4 positionOS : POSITION;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
-                float3 dirWS : TEXCOORD0;
+                float3 viewDirWS  : TEXCOORD0;
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
             float4 _TopColor;
@@ -63,18 +69,27 @@ Shader "Custom/RetrowaveSkyboxURP"
             float _ScanlineJitter;
             float _ScanlineStart;
             float _ScanlineThicknessBoost;
+            float _GlowStrength;
+            float _GradientPower;
+
             TEXTURE2D(_GroundTex);
             SAMPLER(sampler_GroundTex);
             float4 _GroundColor;
             float _GroundScale;
-            float _GlowStrength;
-            float _GradientPower;
 
             Varyings vert (Attributes v)
             {
                 Varyings o;
+
+                UNITY_SETUP_INSTANCE_ID(v);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
+
                 o.positionCS = TransformObjectToHClip(v.positionOS.xyz);
-                o.dirWS = TransformObjectToWorld(v.positionOS.xyz);
+
+                // Correct XR-safe sky direction
+                o.viewDirWS =
+                    normalize(TransformObjectToWorldDir(v.positionOS.xyz));
+
                 return o;
             }
 
@@ -90,29 +105,41 @@ Shader "Custom/RetrowaveSkyboxURP"
 
                 float sunBottom = -_SunSize;
                 float sunTop = _SunSize;
-                float height01 = saturate((uv.y - sunBottom) / (sunTop - sunBottom));
+                float height01 =
+                    saturate((uv.y - sunBottom) / (sunTop - sunBottom));
 
                 float depth = 1.0 - height01;
+                float jitter =
+                    sin((uv.y + time) * 40) * _ScanlineJitter * depth;
 
-                float jitter = sin((uv.y + time) * 40) * _ScanlineJitter * depth;
-
-                float frequency = lerp(_ScanlineCount, _ScanlineCount * (1.0 - _ScanlineThicknessBoost), depth);
+                float frequency =
+                    lerp(_ScanlineCount,
+                         _ScanlineCount * (1.0 - _ScanlineThicknessBoost),
+                         depth);
 
                 float y = uv.y + jitter + time;
-                float scan = sin(y * frequency * 3.14159);
+                float scan = sin(y * frequency * PI);
                 scan = scan * 0.5 + 0.5;
 
-                float sharpness = lerp(_ScanlineSharpness, _ScanlineSharpness * 0.6, depth);
+                float sharpness =
+                    lerp(_ScanlineSharpness,
+                         _ScanlineSharpness * 0.6,
+                         depth);
+
                 return pow(scan, sharpness);
             }
 
             half4 frag (Varyings i) : SV_Target
             {
-                float3 dir = normalize(i.dirWS);
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(i);
+
+                float3 dir = normalize(i.viewDirWS);
+
                 float t = saturate(dir.y * 0.5 + 0.5);
                 t = pow(t, _GradientPower);
 
-                float3 skyColor = lerp(_HorizonColor.rgb, _TopColor.rgb, t);
+                float3 skyColor =
+                    lerp(_HorizonColor.rgb, _TopColor.rgb, t);
 
                 float2 sunUV;
                 sunUV.x = dir.x;
@@ -120,36 +147,41 @@ Shader "Custom/RetrowaveSkyboxURP"
 
                 float sunMask = SunMask(sunUV);
 
-                // Smooth fade-in for scanlines near the center to avoid hard cutoff
-                // Fade scanlines in starting higher up the sun (about 70% from bottom)
-                // sunUV.y is negative at bottom, positive at top
-                float ridgeStart = lerp(0.0, 0.7, 1.0); // conceptual 70% height
-                // Fade scanlines in starting at ~70% of the sun height (independent of radius)
-                // Normalized height inside sun: 0 = bottom, 1 = top
                 float sunBottom = -_SunSize;
                 float sunTop = _SunSize;
-                float height01 = saturate((sunUV.y - sunBottom) / (sunTop - sunBottom));
+                float height01 =
+                    saturate((sunUV.y - sunBottom) / (sunTop - sunBottom));
 
-                // Enable scanlines only from bottom up to 70% height
-                float ridgeRegion = smoothstep(_ScanlineStart, _ScanlineStart - 0.1, height01);
-                // Allow scanlines well above center (approx 70% from bottom)
-                float ridgeMask = SunRidges(sunUV) * ridgeRegion;
+                float ridgeRegion =
+                    smoothstep(_ScanlineStart,
+                               _ScanlineStart - 0.1,
+                               height01);
 
-                // Invert scanlines so lines become transparent cutouts
+                float ridgeMask =
+                    SunRidges(sunUV) * ridgeRegion;
+
                 float sun = sunMask * (1.0 - ridgeMask);
-                float glow = smoothstep(_SunSize * 1.5, 0, length(sunUV)) * _GlowStrength;
+
+                float glow =
+                    smoothstep(_SunSize * 1.5, 0,
+                               length(sunUV)) * _GlowStrength;
 
                 float3 finalColor = skyColor;
 
-                // Ground projection (procedural skybox-style)
                 if (dir.y < 0)
                 {
                     float tGround = -dir.y;
                     float2 groundUV = dir.xz / max(tGround, 0.001);
                     groundUV /= _GroundScale;
-                    float3 grid = SAMPLE_TEXTURE2D(_GroundTex, sampler_GroundTex, groundUV).rgb;
+
+                    float3 grid =
+                        SAMPLE_TEXTURE2D(_GroundTex,
+                                         sampler_GroundTex,
+                                         groundUV).rgb;
+
                     finalColor = grid * _GroundColor.rgb;
                 }
+
                 finalColor += _SunColor.rgb * sun;
                 finalColor += _SunColor.rgb * glow * sunMask;
 

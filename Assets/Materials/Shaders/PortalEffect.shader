@@ -12,189 +12,204 @@ Shader "Custom/URP/PortalEffect"
         _Brightness ("Brightness", Range(0, 3)) = 1.5
         _EdgeGlow ("Edge Glow", Range(0, 2)) = 0.8
     }
-    
+
     SubShader
     {
-        Tags 
-        { 
-            "RenderType" = "Opaque" 
-            "RenderPipeline" = "UniversalPipeline"
-            "Queue" = "Geometry"
+        Tags
+        {
+            "RenderPipeline"="UniversalPipeline"
+            "RenderType"="Opaque"
+            "Queue"="Geometry"
         }
-        
+
         LOD 100
 
+        // ------------------------------------------------------------
+        // Forward Pass (XR SAFE)
+        // ------------------------------------------------------------
         Pass
         {
             Name "ForwardLit"
-            Tags { "LightMode" = "UniversalForward" }
+            Tags { "LightMode"="UniversalForward" }
 
             HLSLPROGRAM
             #pragma vertex vert
             #pragma fragment frag
             #pragma multi_compile_fog
+            #pragma multi_compile_instancing
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityInput.hlsl"
 
             struct Attributes
             {
                 float4 positionOS : POSITION;
-                float3 normalOS : NORMAL;
-                float2 uv : TEXCOORD0;
+                float3 normalOS   : NORMAL;
+                float2 uv         : TEXCOORD0;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
-                float2 uv : TEXCOORD0;
-                float3 normalWS : TEXCOORD1;
-                float3 viewDirWS : TEXCOORD2;
-                float fogFactor : TEXCOORD3;
+                float2 uv         : TEXCOORD0;
+                float3 normalWS   : TEXCOORD1;
+                float3 viewDirWS  : TEXCOORD2;
+                float  fogFactor  : TEXCOORD3;
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
             CBUFFER_START(UnityPerMaterial)
                 float4 _MainColor;
                 float4 _SecondaryColor;
                 float4 _DepthColor;
-                float _Speed;
-                float _DistortionStrength;
-                float _VortexTightness;
-                float _DepthLayers;
-                float _Brightness;
-                float _EdgeGlow;
+                float  _Speed;
+                float  _DistortionStrength;
+                float  _VortexTightness;
+                float  _DepthLayers;
+                float  _Brightness;
+                float  _EdgeGlow;
             CBUFFER_END
 
-            // Noise function
+            // ------------------------------------------------------------
+            // Noise helpers
+            // ------------------------------------------------------------
             float noise(float2 uv)
             {
-                return frac(sin(dot(uv, float2(12.9898, 78.233))) * 43758.5453);
+                return frac(sin(dot(uv, float2(12.9898,78.233))) * 43758.5453);
             }
 
-            // Smooth noise
             float smoothNoise(float2 uv)
             {
                 float2 i = floor(uv);
                 float2 f = frac(uv);
                 f = f * f * (3.0 - 2.0 * f);
-                
+
                 float a = noise(i);
-                float b = noise(i + float2(1.0, 0.0));
-                float c = noise(i + float2(0.0, 1.0));
-                float d = noise(i + float2(1.0, 1.0));
-                
-                return lerp(lerp(a, b, f.x), lerp(c, d, f.x), f.y);
+                float b = noise(i + float2(1,0));
+                float c = noise(i + float2(0,1));
+                float d = noise(i + float2(1,1));
+
+                return lerp(lerp(a,b,f.x), lerp(c,d,f.x), f.y);
             }
 
-            // Fractal Brownian Motion
             float fbm(float2 uv)
             {
-                float value = 0.0;
-                float amplitude = 0.5;
-                
-                for(int i = 0; i < 4; i++)
+                float v = 0;
+                float a = 0.5;
+                for (int i = 0; i < 4; i++)
                 {
-                    value += amplitude * smoothNoise(uv);
-                    uv *= 2.0;
-                    amplitude *= 0.5;
+                    v += a * smoothNoise(uv);
+                    uv *= 2;
+                    a *= 0.5;
                 }
-                
-                return value;
+                return v;
             }
 
-            Varyings vert(Attributes input)
+            Varyings vert (Attributes input)
             {
                 Varyings output;
-                
-                VertexPositionInputs positionInputs = GetVertexPositionInputs(input.positionOS.xyz);
-                VertexNormalInputs normalInputs = GetVertexNormalInputs(input.normalOS);
-                
-                output.positionCS = positionInputs.positionCS;
+
+                UNITY_SETUP_INSTANCE_ID(input);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+
+                VertexPositionInputs pos =
+                    GetVertexPositionInputs(input.positionOS.xyz);
+
+                VertexNormalInputs norm =
+                    GetVertexNormalInputs(input.normalOS);
+
+                output.positionCS = pos.positionCS;
                 output.uv = input.uv;
-                output.normalWS = normalInputs.normalWS;
-                output.viewDirWS = GetWorldSpaceNormalizeViewDir(positionInputs.positionWS);
-                output.fogFactor = ComputeFogFactor(positionInputs.positionCS.z);
-                
+                output.normalWS = norm.normalWS;
+                output.viewDirWS =
+                    GetWorldSpaceNormalizeViewDir(pos.positionWS);
+                output.fogFactor =
+                    ComputeFogFactor(pos.positionCS.z);
+
                 return output;
             }
 
-            float4 frag(Varyings input) : SV_Target
+            float4 frag (Varyings input) : SV_Target
             {
+                UNITY_SETUP_STEREO_EYE_INDEX_POST_VERTEX(input);
+
                 float time = _Time.y * _Speed;
-                
-                // Center UV coordinates
+
                 float2 uv = input.uv * 2.0 - 1.0;
                 float dist = length(uv);
                 float angle = atan2(uv.y, uv.x);
-                
-                // Create swirling vortex effect
+
                 float spiral = angle + dist * _VortexTightness - time * 2.0;
-                
-                // Multiple depth layers
+
                 float3 color = _DepthColor.rgb;
-                
-                for(float i = 0; i < _DepthLayers; i++)
+
+                for (float i = 0; i < _DepthLayers; i++)
                 {
                     float layerDepth = i / _DepthLayers;
-                    float layerDist = dist - layerDepth * 0.3 + time * 0.1 * (i + 1.0);
-                    
-                    // Rotating spiral pattern
+                    float layerDist =
+                        dist - layerDepth * 0.3 + time * 0.1 * (i + 1);
+
                     float2 spiralUV = float2(
-                        cos(spiral + layerDepth * 6.28) * layerDist,
-                        sin(spiral + layerDepth * 6.28) * layerDist
+                        cos(spiral + layerDepth * 6.28318) * layerDist,
+                        sin(spiral + layerDepth * 6.28318) * layerDist
                     );
-                    
-                    // Add distortion with noise
-                    float2 distortedUV = spiralUV * 3.0 + time * 0.5 * (1.0 - layerDepth);
-                    float noiseValue = fbm(distortedUV + float2(time * 0.3, 0));
-                    
-                    // Create energy rings
-                    float rings = sin(layerDist * 15.0 - time * 3.0 + noiseValue * _DistortionStrength) * 0.5 + 0.5;
+
+                    float2 distortedUV =
+                        spiralUV * 3.0 + time * 0.5 * (1.0 - layerDepth);
+
+                    float n = fbm(distortedUV + float2(time * 0.3, 0));
+
+                    float rings =
+                        sin(layerDist * 15.0 - time * 3.0 +
+                            n * _DistortionStrength) * 0.5 + 0.5;
+
                     rings = pow(rings, 3.0);
-                    
-                    // Blend colors based on depth
-                    float3 layerColor = lerp(_MainColor.rgb, _SecondaryColor.rgb, layerDepth);
-                    color += layerColor * rings * (1.0 - layerDepth * 0.7) * noiseValue;
+
+                    float3 layerColor =
+                        lerp(_MainColor.rgb, _SecondaryColor.rgb, layerDepth);
+
+                    color += layerColor * rings *
+                             (1.0 - layerDepth * 0.7) * n;
                 }
-                
-                // Add pulsing center glow
-                float centerGlow = 1.0 - smoothstep(0.0, 0.5, dist);
+
+                float centerGlow =
+                    1.0 - smoothstep(0.0, 0.5, dist);
                 centerGlow *= (sin(time * 2.0) * 0.3 + 0.7);
                 color += _MainColor.rgb * centerGlow * 2.0;
-                
-                // Edge glow effect
+
                 float edgeGlow = smoothstep(0.7, 1.0, dist);
                 color += _SecondaryColor.rgb * edgeGlow * _EdgeGlow;
-                
-                // Fresnel rim light for depth perception
-                float3 normalWS = normalize(input.normalWS);
-                float3 viewDirWS = normalize(input.viewDirWS);
-                float fresnel = 1.0 - saturate(dot(normalWS, viewDirWS));
-                fresnel = pow(fresnel, 3.0);
+
+                float3 nWS = normalize(input.normalWS);
+                float3 vWS = normalize(input.viewDirWS);
+                float fresnel =
+                    pow(1.0 - saturate(dot(nWS, vWS)), 3.0);
+
                 color += _MainColor.rgb * fresnel * 0.5;
-                
-                // Apply brightness
                 color *= _Brightness;
-                
-                // Add subtle animated particles
-                float2 particleUV = uv * 5.0 + time * 0.5;
-                float particles = smoothNoise(particleUV + float2(time, time * 0.5));
-                particles = pow(abs(particles), 10.0);
+
+                float2 pUV = uv * 5.0 + time * 0.5;
+                float particles =
+                    pow(abs(smoothNoise(pUV + float2(time, time * 0.5))), 10.0);
+
                 color += particles * _SecondaryColor.rgb * 2.0;
-                
+
                 float4 finalColor = float4(color, 1.0);
-                
-                // Apply fog
                 finalColor.rgb = MixFog(finalColor.rgb, input.fogFactor);
-                
+
                 return finalColor;
             }
             ENDHLSL
         }
-        
+
+        // ------------------------------------------------------------
+        // ShadowCaster Pass (XR SAFE)
+        // ------------------------------------------------------------
         Pass
         {
             Name "ShadowCaster"
-            Tags { "LightMode" = "ShadowCaster" }
+            Tags { "LightMode"="ShadowCaster" }
 
             ZWrite On
             ZTest LEqual
@@ -203,46 +218,46 @@ Shader "Custom/URP/PortalEffect"
             HLSLPROGRAM
             #pragma vertex ShadowPassVertex
             #pragma fragment ShadowPassFragment
+            #pragma multi_compile_instancing
 
             #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/Core.hlsl"
+            #include "Packages/com.unity.render-pipelines.universal/ShaderLibrary/UnityInput.hlsl"
 
             struct Attributes
             {
                 float4 positionOS : POSITION;
-                float3 normalOS : NORMAL;
+                float3 normalOS   : NORMAL;
+                UNITY_VERTEX_INPUT_INSTANCE_ID
             };
 
             struct Varyings
             {
                 float4 positionCS : SV_POSITION;
+                UNITY_VERTEX_OUTPUT_STEREO
             };
 
-            float3 _LightDirection;
-
-            Varyings ShadowPassVertex(Attributes input)
+            Varyings ShadowPassVertex (Attributes input)
             {
                 Varyings output;
-                float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
-                float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
-                
-                output.positionCS = TransformWorldToHClip(positionWS);
-                
-                #if UNITY_REVERSED_Z
-                    output.positionCS.z = min(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
-                #else
-                    output.positionCS.z = max(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
-                #endif
-                
+                UNITY_SETUP_INSTANCE_ID(input);
+                UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(output);
+
+                float3 positionWS =
+                    TransformObjectToWorld(input.positionOS.xyz);
+
+                output.positionCS =
+                    TransformWorldToHClip(positionWS);
+
                 return output;
             }
 
-            half4 ShadowPassFragment(Varyings input) : SV_TARGET
+            half4 ShadowPassFragment (Varyings input) : SV_Target
             {
                 return 0;
             }
             ENDHLSL
         }
     }
-    
+
     FallBack "Universal Render Pipeline/Lit"
 }

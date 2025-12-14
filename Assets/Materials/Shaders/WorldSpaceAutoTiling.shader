@@ -1,4 +1,4 @@
-Shader "Custom/URP/WorldSpaceTiling_XR"
+Shader "Custom/URP/WorldSpaceTiling"
 {
     Properties
     {
