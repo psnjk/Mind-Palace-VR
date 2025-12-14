@@ -52,7 +52,7 @@ public class HandCanvas : MonoBehaviour
     {
 
     }
-    
+
     /// <summary>
     /// Setup the node selection dropdown with all the spawnable prefabs from the node manager
     /// </summary>
@@ -74,13 +74,13 @@ public class HandCanvas : MonoBehaviour
         }
 
         TMP_Dropdown nodeSelectionDropdown = nodeSelectionDropdownTransform.GetComponent<TMP_Dropdown>();
-        
+
         if (nodeSelectionDropdown != null && nodeManager != null)
         {
             nodeSelectionDropdown.options.Clear();
 
             int prefabCount = nodeManager.GetSpawnablePrefabCount();
-            
+
             // Add options for each spawnable prefab
             for (int i = 0; i < prefabCount; i++)
             {
@@ -94,7 +94,8 @@ public class HandCanvas : MonoBehaviour
             nodeSelectionDropdown.RefreshShownValue();
 
             // Listen for dropdown value changes
-            nodeSelectionDropdown.onValueChanged.AddListener((int value) => {
+            nodeSelectionDropdown.onValueChanged.AddListener((int value) =>
+            {
                 if (nodeManager != null)
                 {
                     nodeManager.SetSelectedNodeIndex(value);
@@ -137,7 +138,8 @@ public class HandCanvas : MonoBehaviour
         Toggle consoleToggle = consoleToggleTransform.GetComponent<Toggle>();
         if (consoleToggle != null)
         {
-            consoleToggle.onValueChanged.AddListener((bool isOn) => {
+            consoleToggle.onValueChanged.AddListener((bool isOn) =>
+            {
                 if (uiManager != null)
                 {
                     uiManager.ToggleCanvas("Console");
@@ -172,13 +174,23 @@ public class HandCanvas : MonoBehaviour
         Button settingsButton = settingsButtonTransform.GetComponent<Button>();
         if (settingsButton != null)
         {
-            settingsButton.onClick.AddListener(() => {
+            settingsButton.onClick.AddListener(() =>
+            {
                 if (uiManager != null)
                 {
                     uiManager.HideCanvas("Menu");
                     uiManager.ToggleCanvas("Settings");
                 }
             });
+
+            // Add ExpandingButton component if it doesn't exist
+            ExpandingButton expandingButton = settingsButtonTransform.GetComponent<ExpandingButton>();
+            if (expandingButton == null)
+            {
+                expandingButton = settingsButtonTransform.gameObject.AddComponent<ExpandingButton>();
+            }
+
+            Debug.Log($"[HandCanvas] Settings button set up successfully with hover effects");
         }
         else
         {

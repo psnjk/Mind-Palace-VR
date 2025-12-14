@@ -1,7 +1,5 @@
-using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using UnityEngine.XR.Interaction.Toolkit;
 using UnityEngine.XR.Interaction.Toolkit.Interactables;
@@ -12,6 +10,7 @@ public class Note : MonoBehaviour
     private LookAtCamera _lookAtCameraComponent;
     private Rigidbody _rigidBody;
     private XRGrabInteractable _grabInteractable;
+    private NoteLinkable _noteLinkable;
 
     private string _instanceID;
 
@@ -40,6 +39,7 @@ public class Note : MonoBehaviour
         _lookAtCameraComponent = GetComponent<LookAtCamera>();
         _rigidBody = GetComponent<Rigidbody>();
         _grabInteractable = GetComponent<XRGrabInteractable>();
+        _noteLinkable = GetComponent<NoteLinkable>();
 
         if (_lookAtCameraComponent == null)
         {
@@ -64,6 +64,11 @@ public class Note : MonoBehaviour
             // Set up the grab interactable events
             _grabInteractable.selectEntered.AddListener(OnSelectEntered);
             _grabInteractable.selectExited.AddListener(OnSelectExited);
+        }
+
+        if (!_noteLinkable)
+        {
+            Debug.LogWarning($"[Note] No NoteLinkable component found on {gameObject.name}");
         }
 
         // Find the Delete Button child and assign the delete function to it
@@ -92,16 +97,6 @@ public class Note : MonoBehaviour
         OnRelease();
     }
 
-    // Update is called once per frame
-    void Update()
-    {
-        //if (inputField.isFocused)
-        //{
-        //    int caretPos = inputField.caretPosition;
-        //    Debug.Log("[Note] Caret Position: " + caretPos);
-        //}
-    }
-
     [ContextMenu("Test Insert Text")]
     public void TestInsertText()
     {
@@ -121,7 +116,6 @@ public class Note : MonoBehaviour
         }
     }
 
-
     /// <summary>
     /// Due to some XR Interaction Toolkit quirks, we need to have explicit onGrab and onRelease methods to handle some XR Grab Interactable and RigidBody parameters to make sure that the notes don't go through other objects when being grabbed but still look at the camera when released and not fly out in zero gravity.
     /// </summary>
@@ -135,6 +129,9 @@ public class Note : MonoBehaviour
         _rigidBody.interpolation = RigidbodyInterpolation.Interpolate;
 
         _grabInteractable.movementType = XRGrabInteractable.MovementType.VelocityTracking;
+
+        // Deactivate any line colliders while moving the note to avoid interference
+        NoteLinkManager.Instance.DeactivateLineCollidersForNote(_noteLinkable.NoteID);
     }
 
     /// <summary>
@@ -151,6 +148,8 @@ public class Note : MonoBehaviour
 
         _grabInteractable.movementType = XRGrabInteractable.MovementType.Instantaneous;
 
+        // Reactivate any line colliders after moving the note
+        NoteLinkManager.Instance.RegenerateLineCollidersForNote(_noteLinkable.NoteID);
     }
 
     /// <summary>
@@ -158,6 +157,22 @@ public class Note : MonoBehaviour
     /// </summary>
     public void DeleteNote()
     {
+        Debug.Log($"[Note] DeleteNote called for {_instanceID}");
+
+        // Get the NoteLinkable component if it exists
+        NoteLinkable noteLinkable = GetComponent<NoteLinkable>();
+        if (noteLinkable != null && NoteLinkManager.Instance != null)
+        {
+            Debug.Log($"[Note] Manually unregistering note {noteLinkable.NoteID} before deletion");
+
+            // Cancel any active link operation if this note is involved
+            noteLinkable.CancelLinkOperation();
+
+            // Explicitly unregister the note to ensure immediate cleanup
+            NoteLinkManager.Instance.UnregisterNote(noteLinkable);
+        }
+
+        // Destroy the GameObject (this will also trigger OnDestroy methods)
         Destroy(gameObject);
     }
 
@@ -209,6 +224,14 @@ public class Note : MonoBehaviour
         {
             deleteButton.onClick.RemoveAllListeners();
             deleteButton.onClick.AddListener(DeleteNote);
+
+            // Add ExpandingButton component if it doesn't exist
+            ExpandingButton expandingButton = deleteButtonTransform.GetComponent<ExpandingButton>();
+            if (expandingButton == null)
+            {
+                expandingButton = deleteButtonTransform.gameObject.AddComponent<ExpandingButton>();
+            }
+
             Debug.Log($"[Note] Successfully connected Delete Button on {gameObject.name}");
         }
         else
@@ -248,6 +271,14 @@ public class Note : MonoBehaviour
         {
             pinButton.onClick.RemoveAllListeners();
             pinButton.onClick.AddListener(ToggleLookAtCamera);
+
+            // Add ExpandingButton component if it doesn't exist
+            ExpandingButton expandingButton = pinButtonTransform.GetComponent<ExpandingButton>();
+            if (expandingButton == null)
+            {
+                expandingButton = pinButtonTransform.gameObject.AddComponent<ExpandingButton>();
+            }
+
             Debug.Log($"[Note] Successfully connected Pin Button on {gameObject.name}");
         }
         else
