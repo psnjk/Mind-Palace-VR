@@ -1,5 +1,6 @@
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using TMPro;
 using UnityEngine;
@@ -7,8 +8,29 @@ using UnityEngine.EventSystems;
 using UnityEngine.Rendering;
 using UnityEngine.UI;
 
+public enum NoteTextAlignHorizontal
+{
+    Left,
+    Center,
+    Right,
+    Justified
+}
+
+public enum NoteTextAlignVertical
+{
+    Top,
+    Middle,
+    Bottom
+}
+
 public class NoteCustomizable : MonoBehaviour
 {
+
+    // Public variables (Should be saved to JSON later and used to construct the note)
+    public float fontSize;
+    public NoteTextAlignHorizontal textAlignHorizontal = NoteTextAlignHorizontal.Left;
+    public NoteTextAlignVertical textAlignVertical = NoteTextAlignVertical.Middle;
+
 
     private Button _customizeButton;
     private Button _fontIncreaseButton;
@@ -20,7 +42,9 @@ public class NoteCustomizable : MonoBehaviour
     private TMP_Text _fontSizeText;
     private GameObject _ONBackground;
 
-    public float fontSize;
+    private Dictionary<NoteTextAlignHorizontal, Button> _textAlignHorizontalButtons;
+    private Dictionary<NoteTextAlignVertical, Button> _textAlignVerticalButtons;
+
 
     // Continuous button press settings
     [SerializeField] private float initialDelay = 0.5f; // Initial delay before continuous action starts
@@ -37,22 +61,202 @@ public class NoteCustomizable : MonoBehaviour
         SetupCustomizationCanvas();
         SetupCustomizeButton();
         SetupFontIncreaseButton();
-        SetupFontDecreaseButton();    
+        SetupFontDecreaseButton();
+
+        SetupTextAlignHorizontalButtons();
+        SetupTextAlignVerticalButtons();
+
+        UpdateTextAlignment();
+        UpdateButtonsVisuals();
     }
 
     // Update is called once per frame
     void Update()
     {
-
     }
 
-
-    private void OnAutoSizeToggleChanged(bool arg0)
+    /// <summary>
+    /// Sets up the text align horizontal buttons
+    /// </summary>
+    private void SetupTextAlignHorizontalButtons()
     {
-        _ONBackground.SetActive(arg0);
-        _inputFieldText.autoSizeTextContainer = arg0;
+        _textAlignHorizontalButtons = new Dictionary<NoteTextAlignHorizontal, Button>();
+
+        foreach (NoteTextAlignHorizontal align in Enum.GetValues(typeof(NoteTextAlignHorizontal)))
+        {
+            string buttonName = $"Align {align.ToString()} Button";
+            Debug.Log($"[NoteCustomizable] Setting up button: {buttonName}");
+            Button alignButton = null;
+            try
+            {
+                alignButton = transform.Find("Customization Canvas").Find("Background").Find(buttonName).GetComponent<Button>();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[NoteCustomizable] Failed to find '{buttonName}': {ex.Message}");
+                continue;
+            }
+
+            _textAlignHorizontalButtons[align] = alignButton;
+
+            NoteTextAlignHorizontal capturedAlign = align; // Capture the current value of align
+            alignButton.onClick.AddListener(() => OnTextAlignHorizontalButtonClicked(capturedAlign));
+        }
     }
 
+    /// <summary>
+    /// Handles text align horizontal button clicks
+    /// </summary>
+    /// <param name="align"></param>
+    private void OnTextAlignHorizontalButtonClicked(NoteTextAlignHorizontal align)
+    {
+        textAlignHorizontal = align;
+        UpdateTextAlignment();
+        UpdateButtonsVisuals();
+    }
+
+    /// <summary>
+    /// Handles text align vertical button clicks
+    /// </summary>
+    /// <param name="align"></param>
+    private void OnTextAlignVerticalButtonClicked(NoteTextAlignVertical align)
+    {
+        textAlignVertical = align;
+        UpdateTextAlignment();
+        UpdateButtonsVisuals();
+    }
+
+    /// <summary>
+    /// Updates the text alignment based on both horizontal and vertical settings
+    /// </summary>
+    private void UpdateTextAlignment()
+    {
+        TextAlignmentOptions alignment = GetCombinedAlignment(textAlignHorizontal, textAlignVertical);
+        Debug.Log($"[NoteCustomizable] Setting alignment to {alignment} (H: {textAlignHorizontal}, V: {textAlignVertical})");
+        _inputFieldText.alignment = alignment;
+    }
+
+    /// <summary>
+    /// Updates the button visuals (pressed down) to reflect current alignment settings
+    /// </summary>
+    private void UpdateButtonsVisuals()
+    {
+        // Update horizontal buttons
+        foreach (var kvp in _textAlignHorizontalButtons)
+        {
+            NoteTextAlignHorizontal align = kvp.Key;
+            Button button = kvp.Value;
+            ButtonToggleVisual toggleVisual = button.GetComponent<ButtonToggleVisual>();
+            if (toggleVisual != null)
+            {
+                toggleVisual.SetButtonState(align == textAlignHorizontal);
+                Debug.Log($"[NoteCustomizable] Updated horizontal button {align} to state {(align == textAlignHorizontal)}");
+            }
+        }
+        // Update vertical buttons
+        foreach (var kvp in _textAlignVerticalButtons)
+        {
+            NoteTextAlignVertical align = kvp.Key;
+            Button button = kvp.Value;
+            ButtonToggleVisual toggleVisual = button.GetComponent<ButtonToggleVisual>();
+            if (toggleVisual != null)
+            {
+                toggleVisual.SetButtonState(align == textAlignVertical);
+                Debug.Log($"[NoteCustomizable] Updated vertical button {align} to state {(align == textAlignVertical)}");
+            }
+        }
+    }
+
+    /// <summary>
+    /// Gets the combined TextAlignmentOptions based on horizontal and vertical alignment
+    /// </summary>
+    /// <param name="horizontal">Horizontal alignment</param>
+    /// <param name="vertical">Vertical alignment</param>
+    /// <returns>Combined TextAlignmentOptions</returns>
+    private TextAlignmentOptions GetCombinedAlignment(NoteTextAlignHorizontal horizontal, NoteTextAlignVertical vertical)
+    {
+        Debug.Log($"[NoteCustomizable] GetCombinedAlignment called with H: {horizontal}, V: {vertical}");
+
+        // Combine horizontal and vertical alignments
+        switch (vertical)
+        {
+            case NoteTextAlignVertical.Top:
+                switch (horizontal)
+                {
+                    case NoteTextAlignHorizontal.Left:
+                        return TextAlignmentOptions.TopLeft;
+                    case NoteTextAlignHorizontal.Center:
+                        return TextAlignmentOptions.Top;
+                    case NoteTextAlignHorizontal.Right:
+                        return TextAlignmentOptions.TopRight;
+                    case NoteTextAlignHorizontal.Justified:
+                        return TextAlignmentOptions.TopJustified;
+                }
+                break;
+
+            case NoteTextAlignVertical.Middle:
+                switch (horizontal)
+                {
+                    case NoteTextAlignHorizontal.Left:
+                        return TextAlignmentOptions.MidlineLeft;
+                    case NoteTextAlignHorizontal.Center:
+                        return TextAlignmentOptions.Midline;
+                    case NoteTextAlignHorizontal.Right:
+                        return TextAlignmentOptions.MidlineRight;
+                    case NoteTextAlignHorizontal.Justified:
+                        return TextAlignmentOptions.MidlineJustified;
+                }
+                break;
+
+            case NoteTextAlignVertical.Bottom:
+                switch (horizontal)
+                {
+                    case NoteTextAlignHorizontal.Left:
+                        return TextAlignmentOptions.BottomLeft;
+                    case NoteTextAlignHorizontal.Center:
+                        return TextAlignmentOptions.Bottom;
+                    case NoteTextAlignHorizontal.Right:
+                        return TextAlignmentOptions.BottomRight;
+                    case NoteTextAlignHorizontal.Justified:
+                        return TextAlignmentOptions.BottomJustified;
+                }
+                break;
+        }
+
+        // Default should be MidlineLeft (Middle + Left) as per your specification
+        Debug.LogWarning($"[NoteCustomizable] Unexpected alignment combination, using default MidlineLeft. H: {horizontal}, V: {vertical}");
+        return TextAlignmentOptions.MidlineLeft;
+    }
+
+
+    /// <summary>
+    /// Sets up the text align vertical buttons
+    /// </summary>
+    private void SetupTextAlignVerticalButtons()
+    {
+        _textAlignVerticalButtons = new Dictionary<NoteTextAlignVertical, Button>();
+
+        foreach (NoteTextAlignVertical align in Enum.GetValues(typeof(NoteTextAlignVertical)))
+        {
+            string buttonName = $"Align {align.ToString()} Button";
+            Debug.Log($"[NoteCustomizable] Setting up button: {buttonName}");
+            Button alignButton = null;
+            try
+            {
+                alignButton = transform.Find("Customization Canvas").Find("Background").Find(buttonName).GetComponent<Button>();
+            }
+            catch (System.Exception ex)
+            {
+                Debug.LogError($"[NoteCustomizable] Failed to find '{buttonName}': {ex.Message}");
+                continue;
+            }
+
+            _textAlignVerticalButtons[align] = alignButton;
+
+            NoteTextAlignVertical capturedAlign = align; // Capture the current value of align
+            alignButton.onClick.AddListener(() => OnTextAlignVerticalButtonClicked(capturedAlign));
+        }
+    }
 
     /// <summary>
     /// Sets up the customization canvas
@@ -128,7 +332,7 @@ public class NoteCustomizable : MonoBehaviour
         _inputFieldText.fontSizeMax = fontSize;
         _inputField.onValueChanged.AddListener(OnInputFieldValueChanged);
 
-        
+
     }
 
     private void OnInputFieldValueChanged(string _)
@@ -351,7 +555,7 @@ public class NoteCustomizable : MonoBehaviour
     private void DecrementFontSize()
     {
         fontSize -= 1;
-        
+
         if (fontSize <= _inputFieldText.fontSizeMin)
         {
             fontSize = Mathf.CeilToInt(_inputFieldText.fontSizeMin);
