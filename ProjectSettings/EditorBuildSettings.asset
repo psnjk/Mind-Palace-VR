@@ -5,15 +5,18 @@ EditorBuildSettings:
   m_ObjectHideFlags: 0
   serializedVersion: 2
   m_Scenes:
-  - enabled: 0
-    path: Assets/Scenes/SampleScene.unity
-    guid: 99c9720ab356a0642a771bea13969a05
-  - enabled: 0
-    path: Assets/Scenes/NoteTakingTestScene.unity
-    guid: 04d097350b243ad48a596bc47f22fc9a
   - enabled: 1
-    path: Assets/Scenes/VoiceInputTestScene.unity
-    guid: 8a297f820f2a8624ebab52928d5a81ea
+    path: Assets/Scenes/MainHub.unity
+    guid: 8d2452c0a138c184393c2aee983cb1ec
+  - enabled: 1
+    path: Assets/Scenes/Room1.unity
+    guid: bae89393d19993d4cb4ff3e1732947a3
+  - enabled: 1
+    path: Assets/Scenes/Room2.unity
+    guid: b092c0a9c41afa847a73dc09e168d2b8
+  - enabled: 1
+    path: Assets/Scenes/Room3.unity
+    guid: ad40e5f32dcee4d498ea0aad402c8a03
   m_configObjects:
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     com.unity.xr.management.loader_settings: {fileID: 11400000, guid: a049c262d718eb94a86f870a9fad9aec, type: 2}

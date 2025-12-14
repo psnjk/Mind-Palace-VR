@@ -178,7 +178,7 @@ Shader "Custom/URP/PortalEffect"
                 // Add subtle animated particles
                 float2 particleUV = uv * 5.0 + time * 0.5;
                 float particles = smoothNoise(particleUV + float2(time, time * 0.5));
-                particles = pow(particles, 10.0);
+                particles = pow(abs(particles), 10.0);
                 color += particles * _SecondaryColor.rgb * 2.0;
                 
                 float4 finalColor = float4(color, 1.0);
@@ -225,7 +225,7 @@ Shader "Custom/URP/PortalEffect"
                 float3 positionWS = TransformObjectToWorld(input.positionOS.xyz);
                 float3 normalWS = TransformObjectToWorldNormal(input.normalOS);
                 
-                output.positionCS = TransformWorldToHClip(ApplyShadowBias(positionWS, normalWS, _LightDirection));
+                output.positionCS = TransformWorldToHClip(positionWS);
                 
                 #if UNITY_REVERSED_Z
                     output.positionCS.z = min(output.positionCS.z, output.positionCS.w * UNITY_NEAR_CLIP_VALUE);
