@@ -16,7 +16,7 @@ GameObject:
   - component: {fileID: 8734250131132367004}
   - component: {fileID: 3665180933701290628}
   m_Layer: 0
-  m_Name: SwitchableObject
+  m_Name: Switchable Object
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
