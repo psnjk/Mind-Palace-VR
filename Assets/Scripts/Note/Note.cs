@@ -223,13 +223,22 @@ public class Note : MonoBehaviour
         if (deleteButton != null)
         {
             deleteButton.onClick.RemoveAllListeners();
-            deleteButton.onClick.AddListener(DeleteNote);
+            //deleteButton.onClick.AddListener(DeleteNote);
 
             // Add ExpandingButton component if it doesn't exist
             ExpandingButton expandingButton = deleteButtonTransform.GetComponent<ExpandingButton>();
             if (expandingButton == null)
             {
                 expandingButton = deleteButtonTransform.gameObject.AddComponent<ExpandingButton>();
+            }
+
+            LongPressButton longPressButton = deleteButtonTransform.GetComponent<LongPressButton>();
+            if (longPressButton == null)
+            {
+                Debug.LogWarning($"[Note] No LongPressButton component found on Delete Button of {gameObject.name}");
+            } else
+            {
+                longPressButton.OnDeletePressed += DeleteNote;
             }
 
             Debug.Log($"[Note] Successfully connected Delete Button on {gameObject.name}");
