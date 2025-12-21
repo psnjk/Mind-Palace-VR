@@ -74,4 +74,27 @@ public class ButtonToggleVisual : MonoBehaviour
             }
         }
     }
+
+    /// <summary>
+    /// Update the original color when the button's color scheme changes.
+    /// Call this after changing the button's image color externally.
+    /// </summary>
+    public void UpdateOriginalColor(Color newColor)
+    {
+        originalColor = newColor;
+        
+        // Re-apply the current state with the new color
+        if (button != null && button.image != null)
+        {
+            ColorBlock colors = button.colors;
+            if (isCurrentlyPressed)
+            {
+                button.image.color = originalColor * colors.pressedColor;
+            }
+            else
+            {
+                button.image.color = originalColor * colors.normalColor;
+            }
+        }
+    }
 }

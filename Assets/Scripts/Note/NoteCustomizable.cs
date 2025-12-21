@@ -42,6 +42,8 @@ public class NoteCustomizable : MonoBehaviour
     private TMP_Text _fontSizeText;
     private GameObject _ONBackground;
 
+    private NoteColorable _noteColorable;
+
     private Dictionary<NoteTextAlignHorizontal, Button> _textAlignHorizontalButtons;
     private Dictionary<NoteTextAlignVertical, Button> _textAlignVerticalButtons;
 
@@ -56,6 +58,7 @@ public class NoteCustomizable : MonoBehaviour
     // Start is called once before the first execution of Update after the MonoBehaviour is created
     void Start()
     {
+        SetupNoteColorable();
         SetupInputFieldText();
         SetupFontSizeText();
         SetupCustomizationCanvas();
@@ -73,6 +76,24 @@ public class NoteCustomizable : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+    }
+
+
+
+    /// <summary>
+    /// Setup reference to NoteColorable component
+    /// </summary>
+    private void SetupNoteColorable()
+    {
+        try
+        {
+            _noteColorable = GetComponent<NoteColorable>();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError($"[NoteCustomizable] Failed to get NoteColorable component: {ex.Message}");
+            return;
+        }
     }
 
     /// <summary>
@@ -300,7 +321,27 @@ public class NoteCustomizable : MonoBehaviour
     /// </summary>
     private void OnCustomizeButtonClicked()
     {
-        _customizationCanvas.SetActive(!_customizationCanvas.activeSelf);
+        if (_customizationCanvas.activeSelf)
+        {
+            _customizationCanvas.GetComponent<UISlideUpBounce>().Hide();
+        }
+        else
+        {
+            _customizationCanvas.GetComponent<UISlideUpBounce>().Show();
+        }
+
+        if (_noteColorable != null)
+        {
+            _noteColorable.CloseColorCanvas();
+        }
+    }
+
+    /// <summary>
+    /// Closes the customization canvas
+    /// </summary>
+    public void CloseCustomizationCanvas()
+    {
+        _customizationCanvas.GetComponent<UISlideUpBounce>().Hide();
     }
 
 
