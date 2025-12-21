@@ -62,7 +62,7 @@ public class NoteLinkable : MonoBehaviour
 
         // Setup the attach points canvas
         GetAttachPointsCanvas();
-        _attachPointsCanvas?.SetActive(false);
+        _attachPointsCanvas?.gameObject.SetActive(false);
 
         // Setup the link button
         SetupLinkButton();
@@ -108,8 +108,17 @@ public class NoteLinkable : MonoBehaviour
     private void ToggleLocalLinkMode()
     {
         _isLocalLinkMode = !_isLocalLinkMode;
-        _handle?.SetActive(_isLocalLinkMode);
-        _attachPointsCanvas?.SetActive(!_isLocalLinkMode);
+        _handle?.SetActive(!_isLocalLinkMode);
+        //_attachPointsCanvas?.SetActive(!_isLocalLinkMode);
+        if (!_isLocalLinkMode)
+        {
+            _attachPointsCanvas?.GetComponent<UIScaleOut>()?.Hide();
+        }
+        else
+        {
+            ShowAllAttachPointButtons();
+            _attachPointsCanvas?.GetComponent<UIScaleOut>()?.Show();
+        }
     }
 
     public void SetLocalLinkMode(bool active)
@@ -119,7 +128,16 @@ public class NoteLinkable : MonoBehaviour
 
         _isLocalLinkMode = active;
         _handle?.SetActive(!_isLocalLinkMode);
-        _attachPointsCanvas?.SetActive(_isLocalLinkMode);
+        //_attachPointsCanvas?.SetActive(_isLocalLinkMode);
+        if (!_isLocalLinkMode)
+        {
+            _attachPointsCanvas?.GetComponent<UIScaleOut>()?.Hide();
+        }
+        else
+        {
+            ShowAllAttachPointButtons();
+            _attachPointsCanvas?.GetComponent<UIScaleOut>()?.Show();
+        }
 
         Debug.Log($"[NoteLinkable] After SetLocalLinkMode - Handle active: {_handle?.activeInHierarchy}, AttachPointsCanvas active: {_attachPointsCanvas?.activeInHierarchy}");
     }
