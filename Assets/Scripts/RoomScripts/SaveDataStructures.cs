@@ -35,22 +35,20 @@ public class SaveIndex
     }
 }
 
-/// <summary>
-/// Individual save file data
-/// Each save is stored as "{saveId}.json"
-/// </summary>
+
 [Serializable]
 public class SaveData
 {
     public string saveId;
-    public string saveName; // User-friendly name
-    public string sceneName; // Which base room scene this is (MindPalaceRoom1, etc.)
+    public string saveName; // User given name
+    public string sceneName; // Which base room scene this is (Room1, etc.)
     public DateTime createdDate;
     public DateTime lastModified;
     
     // Room customization data
     public List<NoteData> notes = new List<NoteData>();
     public List<ObjectData> objects = new List<ObjectData>();
+    public List<NoteLinkData> links = new List<NoteLinkData>();
     
     public SaveData(string id, string name, string scene)
     {
@@ -70,18 +68,58 @@ public class NoteData
 {
     public string noteId;
     public string content;
+    public string prefabName; // The name of the prefab to instantiate
     public Vector3Data position;
     public QuaternionData rotation;
     public Vector3Data scale;
-    public string colorHex; // Optional: for note color
+    public string colorHex; // Optional: for note color (keep for backwards compatibility or general use)
+    public int colorTheme; // enum NoteColorTheme
+    public bool isPinned;
+    public bool followCamera;
+    public bool useSmartFollow;
+    public float followDistance;
+    public float heightOffset;
+    public Vector3Data localOffset;
     
-    public NoteData(string id, string text, Vector3 pos, Quaternion rot, Vector3 scl)
+    // Customization fields
+    public float fontSize;
+    public int textAlignHorizontal; // enum NoteTextAlignHorizontal
+    public int textAlignVertical; // enum NoteTextAlignVertical
+    
+    public NoteData(string id, string text, string prefab, Vector3 pos, Quaternion rot, Vector3 scl, bool pinned = true, 
+        bool follow = false, bool smartFollow = true, float dist = 2f, float height = 0f, Vector3? offset = null)
     {
         noteId = id;
         content = text;
+        prefabName = prefab;
         position = new Vector3Data(pos);
         rotation = new QuaternionData(rot);
         scale = new Vector3Data(scl);
+        isPinned = pinned;
+        followCamera = follow;
+        useSmartFollow = smartFollow;
+        followDistance = dist;
+        heightOffset = height;
+        localOffset = new Vector3Data(offset ?? new Vector3(0, 0, 2f));
+    }
+}
+
+[Serializable]
+public class NoteLinkData
+{
+    public string sourceNoteId;
+    public int sourceAttachPoint;
+    public string targetNoteId;
+    public int targetAttachPoint;
+    public string colorHex;
+
+    public NoteLinkData(string sourceId, int sourcePoint, string targetId, int targetPoint, string color = "#FFFFFF")
+    {
+        sourceNoteId = sourceId;
+        sourceAttachPoint = sourcePoint;
+        targetNoteId = targetId;
+        targetAttachPoint = targetPoint;
+        colorHex = color;
     }
 }
 

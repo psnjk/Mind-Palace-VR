@@ -18,7 +18,9 @@ public class LineController : MonoBehaviour
     private LineCanvas _lineCanvasScript;
 
     // Reference to the NoteLink that this line represents
-    private NoteLink _associatedLink;
+    private NoteLink _associatedLink; 
+    public NoteLink AssociatedLink => _associatedLink;
+    
 
     [Header("XR Input")]
     [Tooltip("Input action reference for showing canvas")]

@@ -103,51 +103,46 @@ public class Portal : MonoBehaviour
     {
         isLoading = true;
         
-        string sceneToLoad = "";
-        
         if (portalType == PortalType.DefaultScene)
         {
-            sceneToLoad = defaultSceneName;
+            if (string.IsNullOrEmpty(defaultSceneName))
+            {
+                Debug.LogError($"Portal: No default scene specified for portal {gameObject.name}");
+                isLoading = false;
+                return;
+            }
+
+            if (useFadeTransition)
+            {
+                StartCoroutine(FadeAndLoadDefault(defaultSceneName));
+            }
+            else
+            {
+                SaveManager.Instance.LoadScene(defaultSceneName);
+            }
         }
         else // SavedExperience
         {
-            // Store the save ID so the next scene knows which save to load
-            SaveManager.Instance.SetCurrentSaveId(saveId);
-            sceneToLoad = GetSceneNameFromSave(saveId);
-        }
-        
-        if (string.IsNullOrEmpty(sceneToLoad))
-        {
-            Debug.LogError($"Portal: No scene specified for portal {gameObject.name}");
-            isLoading = false;
-            return;
-        }
-        
-        if (useFadeTransition)
-        {
-            StartCoroutine(FadeAndLoad(sceneToLoad));
-        }
-        else
-        {
-            SceneManager.LoadScene(sceneToLoad);
+            if (string.IsNullOrEmpty(saveId))
+            {
+                Debug.LogError($"Portal: No save ID specified for portal {gameObject.name}");
+                isLoading = false;
+                return;
+            }
+
+            if (useFadeTransition)
+            {
+                StartCoroutine(FadeAndLoadExperience(saveId));
+            }
+            else
+            {
+                SaveManager.Instance.LoadExperience(saveId);
+            }
         }
     }
     
-    private string GetSceneNameFromSave(string saveId)
+    private IEnumerator FadeAndLoadDefault(string sceneName)
     {
-        SaveData saveData = SaveManager.Instance.GetSaveData(saveId);
-        if (saveData != null)
-        {
-            return saveData.sceneName;
-        }
-        
-        Debug.LogError($"Portal: Could not find save data for ID {saveId}");
-        return "";
-    }
-    
-    private IEnumerator FadeAndLoad(string sceneName)
-    {
-        // Fade out
         if (FadeController.Instance != null)
         {
             yield return StartCoroutine(FadeController.Instance.FadeOut(fadeDuration));
@@ -157,8 +152,21 @@ public class Portal : MonoBehaviour
             yield return new WaitForSeconds(fadeDuration);
         }
         
-        // Load scene
-        SceneManager.LoadScene(sceneName);
+        SaveManager.Instance.LoadScene(sceneName);
+    }
+
+    private IEnumerator FadeAndLoadExperience(string saveId)
+    {
+        if (FadeController.Instance != null)
+        {
+            yield return StartCoroutine(FadeController.Instance.FadeOut(fadeDuration));
+        }
+        else
+        {
+            yield return new WaitForSeconds(fadeDuration);
+        }
+        
+        SaveManager.Instance.LoadExperience(saveId);
     }
     
     private void OnDestroy()

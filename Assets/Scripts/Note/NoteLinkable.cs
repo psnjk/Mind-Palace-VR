@@ -34,16 +34,15 @@ public class NoteLinkable : MonoBehaviour
     // Dictionary to store the physical attach point transforms with which the lines will be rendered
     private Dictionary<AttachPoint, Transform> _attachPointTransforms = new Dictionary<AttachPoint, Transform>();
 
+    public void SetNoteID(string id)
+    {
+        NoteID = id;
+    }
+
     private void Awake()
     {
-        //NoteID = System.Guid.NewGuid().ToString();
-        //Debug.Log($"[NoteLinkable] NoteID: {NoteID}");
-
-        // Register with the manager
-        //if (NoteLinkManager.Instance)
-        //{
-        //    NoteLinkManager.Instance.RegisterNote(this);
-        //}
+        NoteID = System.Guid.NewGuid().ToString();
+        Debug.Log($"[NoteLinkable] NoteID: {NoteID}");
     }
 
     private void OnDestroy()
@@ -57,6 +56,12 @@ public class NoteLinkable : MonoBehaviour
 
     private void Start()
     {
+        // Register with the manager
+        if (NoteLinkManager.Instance)
+        {
+            NoteLinkManager.Instance.RegisterNote(this);
+        }
+
         // Setup the handle
         GetHandle();
 

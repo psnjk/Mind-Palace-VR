@@ -14,6 +14,8 @@ public class Note : MonoBehaviour
 
     private string _instanceID;
 
+    public bool IsPinned => _lookAtCamera;
+
     public TMP_InputField inputField;
 
     private void Awake()

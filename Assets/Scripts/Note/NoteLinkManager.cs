@@ -485,25 +485,66 @@ public class NoteLinkManager : MonoBehaviour
     }
 
 
-    private void CreateLine(NoteLink link)
+    /// <summary>
+    /// Programmatically creates a link between two notes. Used for restoring saved experiences.
+    /// </summary>
+    public void CreateLink(string sourceId, AttachPoint sourcePoint, string targetId, AttachPoint targetPoint, Color? linkColor = null)
+    {
+        Debug.Log($"[NoteLinkManager] Programmatically creating link from {sourceId}:{sourcePoint} to {targetId}:{targetPoint}");
+
+        var newLink = new NoteLink(sourceId, sourcePoint, targetId, targetPoint);
+
+        // Check if this link already exists
+        if (links.Any(existingLink =>
+            existingLink.sourceNoteId == newLink.sourceNoteId &&
+            existingLink.sourceAttachPoint == newLink.sourceAttachPoint &&
+            existingLink.targetNoteId == newLink.targetNoteId &&
+            existingLink.targetAttachPoint == newLink.targetAttachPoint))
+        {
+            Debug.LogWarning($"[NoteLinkManager] Link already exists: {newLink}. Skipping.");
+            return;
+        }
+
+        links.Add(newLink);
+        GameObject lineObj = CreateLine(newLink);
+        
+        if (lineObj != null && linkColor.HasValue)
+        {
+            LineController lc = lineObj.GetComponent<LineController>();
+            if (lc != null)
+            {
+                lc.normalColor = linkColor.Value;
+                // Force update color if necessary, though SetupLineRenderer usually handles it in Start
+                // But CreateLine might be called after Start or we need to update it immediately
+                LineRenderer lr = lineObj.GetComponent<LineRenderer>();
+                if (lr != null)
+                {
+                    lr.startColor = linkColor.Value;
+                    lr.endColor = linkColor.Value;
+                }
+            }
+        }
+    }
+
+    private GameObject CreateLine(NoteLink link)
     {
         if (linePrefab == null)
         {
             Debug.LogError("[NoteLinkManager] Line prefab is not assigned!");
-            return;
+            return null;
         }
 
         // Get the source and target notes
         if (!notes.TryGetValue(link.sourceNoteId, out NoteLinkable sourceNote))
         {
             Debug.LogError($"[NoteLinkManager] Source note {link.sourceNoteId} not found when creating line");
-            return;
+            return null;
         }
 
         if (!notes.TryGetValue(link.targetNoteId, out NoteLinkable targetNote))
         {
             Debug.LogError($"[NoteLinkManager] Target note {link.targetNoteId} not found when creating line");
-            return;
+            return null;
         }
 
         // Get the attach point transforms
@@ -513,13 +554,13 @@ public class NoteLinkManager : MonoBehaviour
         if (sourceTransform == null)
         {
             Debug.LogError($"[NoteLinkManager] Source attach point transform {link.sourceAttachPoint} not found for note {link.sourceNoteId}");
-            return;
+            return null;
         }
 
         if (targetTransform == null)
         {
             Debug.LogError($"[NoteLinkManager] Target attach point transform {link.targetAttachPoint} not found for note {link.targetNoteId}");
-            return;
+            return null;
         }
 
         // Instantiate the line prefab
@@ -540,11 +581,13 @@ public class NoteLinkManager : MonoBehaviour
             linkVisuals[link] = lineObject;
 
             Debug.Log($"[NoteLinkManager] Successfully created line between {link.sourceNoteId}:{link.sourceAttachPoint} and {link.targetNoteId}:{link.targetAttachPoint}");
+            return lineObject;
         }
         else
         {
             Debug.LogError("[NoteLinkManager] LineController component not found on instantiated line prefab!");
             Destroy(lineObject);
+            return null;
         }
     }
 }

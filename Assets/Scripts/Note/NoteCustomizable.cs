@@ -150,7 +150,7 @@ public class NoteCustomizable : MonoBehaviour
     /// <summary>
     /// Updates the text alignment based on both horizontal and vertical settings
     /// </summary>
-    private void UpdateTextAlignment()
+    public void UpdateTextAlignment()
     {
         TextAlignmentOptions alignment = GetCombinedAlignment(textAlignHorizontal, textAlignVertical);
         Debug.Log($"[NoteCustomizable] Setting alignment to {alignment} (H: {textAlignHorizontal}, V: {textAlignVertical})");
