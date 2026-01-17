@@ -957,6 +957,30 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 751590463489358470, guid: b69f79d98ac3d7544a87c9f8c0243473, type: 3}
+      propertyPath: m_Size.x
+      value: 1.6767946
+      objectReference: {fileID: 0}
+    - target: {fileID: 751590463489358470, guid: b69f79d98ac3d7544a87c9f8c0243473, type: 3}
+      propertyPath: m_Center.x
+      value: 0.338397
+      objectReference: {fileID: 0}
+    - target: {fileID: 751590463489358470, guid: b69f79d98ac3d7544a87c9f8c0243473, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2660331904450389208, guid: b69f79d98ac3d7544a87c9f8c0243473, type: 3}
+      propertyPath: m_Size.x
+      value: 1.7530141
+      objectReference: {fileID: 0}
+    - target: {fileID: 2660331904450389208, guid: b69f79d98ac3d7544a87c9f8c0243473, type: 3}
+      propertyPath: m_Center.x
+      value: 0.37650654
+      objectReference: {fileID: 0}
+    - target: {fileID: 2660331904450389208, guid: b69f79d98ac3d7544a87c9f8c0243473, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 3952733690693157517, guid: b69f79d98ac3d7544a87c9f8c0243473, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -1000,6 +1024,18 @@ PrefabInstance:
     - target: {fileID: 6840388731797089943, guid: b69f79d98ac3d7544a87c9f8c0243473, type: 3}
       propertyPath: m_Name
       value: MainHall
+      objectReference: {fileID: 0}
+    - target: {fileID: 7040239993247263892, guid: b69f79d98ac3d7544a87c9f8c0243473, type: 3}
+      propertyPath: m_Size.x
+      value: 1.669717
+      objectReference: {fileID: 0}
+    - target: {fileID: 7040239993247263892, guid: b69f79d98ac3d7544a87c9f8c0243473, type: 3}
+      propertyPath: m_Center.x
+      value: 0.334858
+      objectReference: {fileID: 0}
+    - target: {fileID: 7040239993247263892, guid: b69f79d98ac3d7544a87c9f8c0243473, type: 3}
+      propertyPath: m_IsTrigger
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []

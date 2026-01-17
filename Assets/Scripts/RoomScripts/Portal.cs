@@ -60,6 +60,7 @@ public class Portal : MonoBehaviour
     
 
 
+    /*
     private void OnCollisionEnter(Collision other)
     {
         // TODO FIX: DOES NOT DETECT PLAYER COLLISION, DETECTS CUBES FOR SOME REASON
@@ -71,8 +72,19 @@ public class Portal : MonoBehaviour
                 LoadScene();
             }
         }
+    }*/
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.gameObject.CompareTag("Player") || other.gameObject.GetComponent<CharacterController>() != null)
+        {
+            if (!isLoading)
+            {
+                LoadScene();
+            }
+        }      
     }
-    
+
     private void OnPortalSelected(SelectEnterEventArgs args)
     {
         if (!isLoading)
