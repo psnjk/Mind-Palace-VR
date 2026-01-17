@@ -253,12 +253,7 @@ public class SaveManager : MonoBehaviour
                     note.inputField.text = nData.content;
                 }
 
-                if (note != null && !nData.isPinned)
-                {
-                    note.ToggleLookAtCamera();
-                }
-
-                // Restore LookAtCamera settings
+                // Restore LookAtCamera settings and enabled state
                 LookAtCamera lookAt = noteObj.GetComponent<LookAtCamera>();
                 if (lookAt != null)
                 {
@@ -267,6 +262,21 @@ public class SaveManager : MonoBehaviour
                     lookAt.followDistance = nData.followDistance;
                     lookAt.heightOffset = nData.heightOffset;
                     lookAt.localOffset = nData.localOffset.ToVector3();
+                    lookAt.enabled = !nData.isPinned;
+                }
+                else
+                {
+                    Debug.LogWarning($"SaveManager: [{noteIndex}] LookAtCamera component not found on note");
+                }
+                
+                // Set the Note's internal _lookAtCamera field via reflection to prevent Start() from overriding
+                if (note != null)
+                {
+                    var lookAtField = typeof(Note).GetField("_lookAtCamera", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                    if (lookAtField != null)
+                    {
+                        lookAtField.SetValue(note, !nData.isPinned);
+                    }
                 }
 
                 // Restore Customizations
@@ -326,11 +336,11 @@ public class SaveManager : MonoBehaviour
                     Debug.LogWarning($"SaveManager: [{noteIndex}] NoteLinkable component not found on note");
                 }
                 
-                Debug.Log($"SaveManager: [{noteIndex}] ✓ Note '{nData.content}' restored successfully!");
+                Debug.Log($"SaveManager: [{noteIndex}] Note '{nData.content}' restored successfully!");
             }
             else
             {
-                Debug.LogError($"SaveManager: [{noteIndex}] ✗ Failed to load prefab for note '{nData.content}'. Note skipped.");
+                Debug.LogError($"SaveManager: [{noteIndex}] Failed to load prefab for note '{nData.content}'. Note skipped.");
             }
         }
         
@@ -401,7 +411,7 @@ public class SaveManager : MonoBehaviour
                 note.transform.position,
                 note.transform.rotation,
                 note.transform.localScale,
-                note.IsPinned,
+                lookAt == null || !lookAt.enabled,
                 follow,
                 smartFollow,
                 dist,
