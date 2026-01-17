@@ -344,6 +344,28 @@ public class NoteLinkManager : MonoBehaviour
         return links.Count(link => link.InvolvestNote(noteId));
     }
 
+    /// <summary>
+    /// Gets all links and their visual representations for saving
+    /// </summary>
+    public List<(NoteLink link, GameObject lineObject)> GetAllLinksWithVisuals()
+    {
+        var result = new List<(NoteLink, GameObject)>();
+        foreach (var link in links)
+        {
+            if (linkVisuals.TryGetValue(link, out GameObject lineObj))
+            {
+                result.Add((link, lineObj));
+            }
+            else
+            {
+                // Link exists but no visual (shouldn't happen in normal operation)
+                Debug.LogWarning($"[NoteLinkManager] Link {link} has no visual representation");
+                result.Add((link, null));
+            }
+        }
+        return result;
+    }
+
     // Method to list all registered notes for debugging
     [System.Diagnostics.Conditional("UNITY_EDITOR")]
     public void ListAllRegisteredNotes()
@@ -491,6 +513,7 @@ public class NoteLinkManager : MonoBehaviour
     public void CreateLink(string sourceId, AttachPoint sourcePoint, string targetId, AttachPoint targetPoint, Color? linkColor = null)
     {
         Debug.Log($"[NoteLinkManager] Programmatically creating link from {sourceId}:{sourcePoint} to {targetId}:{targetPoint}");
+        Debug.Log($"[NoteLinkManager] Current registered notes count: {notes.Count}");
 
         var newLink = new NoteLink(sourceId, sourcePoint, targetId, targetPoint);
 
@@ -506,46 +529,64 @@ public class NoteLinkManager : MonoBehaviour
         }
 
         links.Add(newLink);
+        Debug.Log($"[NoteLinkManager] Link added to links list. Calling CreateLine...");
         GameObject lineObj = CreateLine(newLink);
         
-        if (lineObj != null && linkColor.HasValue)
+        if (lineObj != null)
         {
-            LineController lc = lineObj.GetComponent<LineController>();
-            if (lc != null)
+            Debug.Log($"[NoteLinkManager] Line created successfully");
+            if (linkColor.HasValue)
             {
-                lc.normalColor = linkColor.Value;
-                // Force update color if necessary, though SetupLineRenderer usually handles it in Start
-                // But CreateLine might be called after Start or we need to update it immediately
-                LineRenderer lr = lineObj.GetComponent<LineRenderer>();
-                if (lr != null)
+                LineController lc = lineObj.GetComponent<LineController>();
+                if (lc != null)
                 {
-                    lr.startColor = linkColor.Value;
-                    lr.endColor = linkColor.Value;
+                    lc.normalColor = linkColor.Value;
+                    // Force update color if necessary, though SetupLineRenderer usually handles it in Start
+                    // But CreateLine might be called after Start or we need to update it immediately
+                    LineRenderer lr = lineObj.GetComponent<LineRenderer>();
+                    if (lr != null)
+                    {
+                        lr.startColor = linkColor.Value;
+                        lr.endColor = linkColor.Value;
+                        Debug.Log($"[NoteLinkManager] Line color set to {linkColor.Value}");
+                    }
                 }
             }
+        }
+        else
+        {
+            Debug.LogError($"[NoteLinkManager] Failed to create line for link {newLink}");
         }
     }
 
     private GameObject CreateLine(NoteLink link)
     {
+        Debug.Log($"[NoteLinkManager] CreateLine called for {link}");
+        
         if (linePrefab == null)
         {
             Debug.LogError("[NoteLinkManager] Line prefab is not assigned!");
             return null;
         }
 
+        Debug.Log($"[NoteLinkManager] Line prefab is assigned: {linePrefab.name}");
+
         // Get the source and target notes
         if (!notes.TryGetValue(link.sourceNoteId, out NoteLinkable sourceNote))
         {
-            Debug.LogError($"[NoteLinkManager] Source note {link.sourceNoteId} not found when creating line");
+            Debug.LogError($"[NoteLinkManager] Source note {link.sourceNoteId} not found when creating line. Registered notes: {string.Join(", ", notes.Keys)}");
             return null;
         }
 
+        Debug.Log($"[NoteLinkManager] Source note found: {sourceNote.gameObject.name}");
+
         if (!notes.TryGetValue(link.targetNoteId, out NoteLinkable targetNote))
         {
-            Debug.LogError($"[NoteLinkManager] Target note {link.targetNoteId} not found when creating line");
+            Debug.LogError($"[NoteLinkManager] Target note {link.targetNoteId} not found when creating line. Registered notes: {string.Join(", ", notes.Keys)}");
             return null;
         }
+
+        Debug.Log($"[NoteLinkManager] Target note found: {targetNote.gameObject.name}");
 
         // Get the attach point transforms
         Transform sourceTransform = sourceNote.GetAttachPointTransform(link.sourceAttachPoint);

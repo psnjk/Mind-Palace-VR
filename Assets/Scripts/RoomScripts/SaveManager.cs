@@ -179,17 +179,20 @@ public class SaveManager : MonoBehaviour
     {
         if (isExperienceLoading && currentSaveId != null)
         {
-            RestoreExperience(currentSaveId);
+            StartCoroutine(RestoreExperienceCoroutine(currentSaveId));
             isExperienceLoading = false;
         }
     }
 
-    private void RestoreExperience(string saveId)
+    private System.Collections.IEnumerator RestoreExperienceCoroutine(string saveId)
     {
         SaveData saveData = GetSaveData(saveId);
-        if (saveData == null) return;
+        if (saveData == null) yield break;
 
         Debug.Log($"Restoring experience: {saveData.saveName}");
+        
+        // Wait for scene to be fully loaded
+        yield return new WaitForEndOfFrame();
 
         // 1. Restore Notes
         Dictionary<string, NoteLinkable> spawnedNotes = new Dictionary<string, NoteLinkable>();
@@ -346,15 +349,25 @@ public class SaveManager : MonoBehaviour
         
         Debug.Log($"SaveManager: Finished restoring all {noteIndex} notes. Total spawned: {spawnedNotes.Count}");
 
+        // Wait for all notes to be fully initialized with their attach points, otherwise links will fail to be restored 
+        yield return StartCoroutine(WaitForNotesInitialization(spawnedNotes));
+
         // 2. Restore Links
         if (NoteLinkManager.Instance != null)
         {
+            Debug.Log($"SaveManager: Starting to restore {saveData.links.Count} links");
+            
+            int linkIndex = 0;
             foreach (NoteLinkData lData in saveData.links)
             {
+                linkIndex++;
+                Debug.Log($"SaveManager: [{linkIndex}/{saveData.links.Count}] Restoring link from {lData.sourceNoteId}:{lData.sourceAttachPoint} to {lData.targetNoteId}:{lData.targetAttachPoint}");
+                
                 Color linkColor = Color.white;
                 if (!string.IsNullOrEmpty(lData.colorHex))
                 {
-                    ColorUtility.TryParseHtmlString(lData.colorHex, out linkColor);
+                    bool colorParsed = ColorUtility.TryParseHtmlString(lData.colorHex, out linkColor);
+                    Debug.Log($"SaveManager: [{linkIndex}] Color parsed: {colorParsed}, Color: {linkColor}, Hex: {lData.colorHex}");
                 }
 
                 NoteLinkManager.Instance.CreateLink(
@@ -364,11 +377,88 @@ public class SaveManager : MonoBehaviour
                     (AttachPoint)lData.targetAttachPoint,
                     linkColor
                 );
+                
+                Debug.Log($"SaveManager: [{linkIndex}] CreateLink called");
             }
+            
+            Debug.Log($"SaveManager: Finished restoring all {linkIndex} links");
+        }
+        else
+        {
+            Debug.LogError("SaveManager: NoteLinkManager.Instance is null! Cannot restore links.");
         }
         
         // 3. Restore Objects (Placeholder)
         // Similar to notes but for other spawned objects
+    }
+
+    private System.Collections.IEnumerator WaitForNotesInitialization(Dictionary<string, NoteLinkable> spawnedNotes)
+    {
+        Debug.Log($"SaveManager: Waiting for {spawnedNotes.Count} notes to initialize...");
+        
+        float timeout = 5f; // 5 second timeout
+        float elapsed = 0f;
+        
+        while (elapsed < timeout)
+        {
+            bool allNotesReady = true;
+            
+            foreach (var kvp in spawnedNotes)
+            {
+                NoteLinkable note = kvp.Value;
+                
+                // Check if note still exists
+                if (note == null || note.gameObject == null)
+                {
+                    Debug.LogWarning($"SaveManager: Note {kvp.Key} was destroyed during initialization");
+                    allNotesReady = false;
+                    break;
+                }
+                
+                // Check if note is registered in NoteLinkManager
+                if (NoteLinkManager.Instance == null)
+                {
+                    allNotesReady = false;
+                    break;
+                }
+                
+                // Verify attach points are initialized by checking if we can get them
+                bool attachPointsReady = true;
+                try
+                {
+                    Transform topPoint = note.GetAttachPointTransform(AttachPoint.Top);
+                    Transform bottomPoint = note.GetAttachPointTransform(AttachPoint.Bottom);
+                    Transform leftPoint = note.GetAttachPointTransform(AttachPoint.Left);
+                    Transform rightPoint = note.GetAttachPointTransform(AttachPoint.Right);
+                    
+                    if (topPoint == null || bottomPoint == null || leftPoint == null || rightPoint == null)
+                    {
+                        attachPointsReady = false;
+                    }
+                }
+                catch
+                {
+                    attachPointsReady = false;
+                }
+                
+                if (!attachPointsReady)
+                {
+                    allNotesReady = false;
+                    break;
+                }
+            }
+            
+            if (allNotesReady)
+            {
+                Debug.Log($"SaveManager: All notes initialized successfully after {elapsed:F2} seconds");
+                yield break;
+            }
+            
+            elapsed += Time.deltaTime;
+            yield return null;
+        }
+        
+        Debug.LogWarning($"SaveManager: Timed out waiting for notes to initialize after {timeout} seconds. Proceeding anyway...");
     }
     
     
@@ -445,13 +535,19 @@ public class SaveManager : MonoBehaviour
         // 2. Collect Links
         if (NoteLinkManager.Instance != null)
         {
-            // We need a way to access the private links list or a public getter in NoteLinkManager
-            // For now, assuming we add a public getter or use the existing structure
-            var allLines = NoteLinkManager.Instance.GetComponentsInChildren<LineController>();
-            foreach (var line in allLines)
+            var allLinksWithVisuals = NoteLinkManager.Instance.GetAllLinksWithVisuals();
+            foreach (var (link, lineObj) in allLinksWithVisuals)
             {
-                var link = line.AssociatedLink;
-                string colorHex = "#" + ColorUtility.ToHtmlStringRGBA(line.normalColor);
+                string colorHex = "#FFFFFFFF"; // Default white
+                
+                if (lineObj != null)
+                {
+                    LineController lineController = lineObj.GetComponent<LineController>();
+                    if (lineController != null)
+                    {
+                        colorHex = "#" + ColorUtility.ToHtmlStringRGBA(lineController.normalColor);
+                    }
+                }
                 
                 newData.links.Add(new NoteLinkData(
                     link.sourceNoteId,
