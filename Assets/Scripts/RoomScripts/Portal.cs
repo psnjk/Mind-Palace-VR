@@ -80,6 +80,23 @@ public class Portal : MonoBehaviour
         {
             if (!isLoading)
             {
+                // Only if going from a room back to the main hub, save the room.
+                if (portalType == PortalType.DefaultScene && defaultSceneName == "MainHub")
+                {
+                    // Check if we have a saveId set on portal, or if SaveManager has a current save ID
+                    string idToUse = !string.IsNullOrEmpty(saveId) ? saveId : SaveManager.Instance.GetCurrentSaveId();
+                    
+                    if (string.IsNullOrEmpty(idToUse))
+                    {
+                        Debug.Log($"Portal: No save ID found. Creating new save for {gameObject.name}.");
+                        SaveManager.Instance.SaveCurrentRoomAsExperience(null);
+                    }
+                    else
+                    {
+                        Debug.Log($"Portal: Updating existing save ID {idToUse} via portal {gameObject.name}.");
+                        SaveManager.Instance.SaveCurrentRoomAsExperience(idToUse);
+                    }
+                }
                 LoadScene();
             }
         }      

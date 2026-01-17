@@ -100,14 +100,22 @@ public class SaveManager : MonoBehaviour
         saveData.lastModified = System.DateTime.Now;
         
         string savePath = Path.Combine(saveDirectory, $"{saveData.saveId}.json");
+        bool isNewSave = !File.Exists(savePath);
+        
         string json = JsonUtility.ToJson(saveData, true);
         File.WriteAllText(savePath, json);
         
-        // Update index
-        saveIndex.AddSave(saveData.saveId);
-        SaveIndexToDisk();
-        
-        Debug.Log($"SaveManager: Saved experience {saveData.saveId}");
+        // Only add to index if it's a new save
+        if (isNewSave)
+        {
+            saveIndex.AddSave(saveData.saveId);
+            SaveIndexToDisk();
+            Debug.Log($"SaveManager: Created new save {saveData.saveId}");
+        }
+        else
+        {
+            Debug.Log($"SaveManager: Updated existing save {saveData.saveId}");
+        }
     }
     
     public void DeleteSave(string saveId)
@@ -461,11 +469,33 @@ public class SaveManager : MonoBehaviour
         Debug.LogWarning($"SaveManager: Timed out waiting for notes to initialize after {timeout} seconds. Proceeding anyway...");
     }
     
-    
-    public void SaveCurrentRoomAsExperience(string experienceName)
+    /// <summary>
+    /// Saves the current room as a new experience or updates an existing one. If saveId is null, creates a new save.
+    /// </summary> 
+    public void SaveCurrentRoomAsExperience(string saveId = null)
     {
+        string experienceName;
         string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
-        string saveId = System.Guid.NewGuid().ToString();
+        if (string.IsNullOrEmpty(saveId))
+        {
+            saveId = System.Guid.NewGuid().ToString();
+            experienceName = $"{sceneName}_{System.DateTime.Now:yyyyMMdd_HHmmss}"; 
+        }
+        else
+        {
+            // Update existing save - preserve the experience name
+            SaveData existingSave = GetSaveData(saveId);
+            if (existingSave != null)
+            {
+                experienceName = existingSave.saveName;
+            }
+            else
+            {
+                // Fallback if save doesn't exist
+                experienceName = $"{sceneName}_{System.DateTime.Now:yyyyMMdd_HHmmss}";
+            }
+        }
+        
         SaveData newData = new SaveData(saveId, experienceName, sceneName);
 
             // 1. Collect Notes
@@ -575,6 +605,10 @@ public class SaveManager : MonoBehaviour
         // }
 
         SaveData(newData);
+        
+        // Set this as the current save ID so future saves update it
+        SetCurrentSaveId(saveId);
+        
         Debug.Log($"[SaveManager] Experience '{experienceName}' saved successfully with ID: {saveId}");
     }
     
