@@ -44,10 +44,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d6bc3d5b3a7f9ba499ff741ac10b8099, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  selectedNode: 0
-  notePrefab: {fileID: 5645291792791619861, guid: d65fb3731b8ceca47b13e32f8bde9adb, type: 3}
-  cubePrefab: {fileID: 1856943733090210708, guid: 1b12d00212f85054d99e0cd385fe81f7, type: 3}
-  switchablePrefab: {fileID: 2134371356469887568, guid: 35d8b9216c0e6644595dfcc52081f38b, type: 3}
+  selectedNodeIndex: 0
+  spawnablePrefabs:
+  - {fileID: 5645291792791619861, guid: d65fb3731b8ceca47b13e32f8bde9adb, type: 3}
+  - {fileID: 5645291792791619861, guid: dfcda40e507606b4886e06be171d7b69, type: 3}
+  - {fileID: 5645291792791619861, guid: 3e644c6bc0c79ce499fa85e7836a954a, type: 3}
+  - {fileID: 5645291792791619861, guid: d9c787dae91ba14429bcad38269dac09, type: 3}
+  - {fileID: 5645291792791619861, guid: f6e824b2ebb0a4c4f9bfba69fa02a99e, type: 3}
   rightControllerTransform: {fileID: 0}
   spawnOffset: {x: 0, y: 0.1, z: 0.3}
   nodesParent: {fileID: 0}

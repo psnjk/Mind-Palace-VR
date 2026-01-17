@@ -152,6 +152,18 @@ public class NoteCustomizable : MonoBehaviour
     /// </summary>
     public void UpdateTextAlignment()
     {
+        // Ensure _inputFieldText is initialized
+        if (_inputFieldText == null)
+        {
+            SetupInputFieldText();
+        }
+        
+        if (_inputFieldText == null)
+        {
+            Debug.LogWarning("[NoteCustomizable] Cannot update text alignment: _inputFieldText is null");
+            return;
+        }
+        
         TextAlignmentOptions alignment = GetCombinedAlignment(textAlignHorizontal, textAlignVertical);
         Debug.Log($"[NoteCustomizable] Setting alignment to {alignment} (H: {textAlignHorizontal}, V: {textAlignVertical})");
         _inputFieldText.alignment = alignment;

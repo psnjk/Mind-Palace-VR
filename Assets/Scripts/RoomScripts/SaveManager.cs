@@ -219,23 +219,35 @@ public class SaveManager : MonoBehaviour
             }
         }
 
+        Debug.Log($"SaveManager: Starting to restore {saveData.notes.Count} notes");
+
+        int noteIndex = 0;
         foreach (NoteData nData in saveData.notes)
         {
+            noteIndex++;
+            Debug.Log($"SaveManager: [{noteIndex}/{saveData.notes.Count}] Restoring note with content: '{nData.content}', ID: {nData.noteId}, Prefab: {nData.prefabName}");
+            
             string prefabPath = "Spawnables/" + (string.IsNullOrEmpty(nData.prefabName) ? "Note" : nData.prefabName);
             GameObject notePrefab = Resources.Load<GameObject>(prefabPath);
             
+            Debug.Log($"SaveManager: [{noteIndex}] Prefab load result: {(notePrefab != null ? "SUCCESS" : "FAILED")} for path: {prefabPath}");
+            
             if (notePrefab == null)
             {
-                Debug.LogError($"SaveManager: Could not find prefab at {prefabPath}. Falling back to Note.");
+                Debug.LogError($"SaveManager: [{noteIndex}] Could not find prefab at {prefabPath}. Falling back to Note.");
                 notePrefab = Resources.Load<GameObject>("Spawnables/Note");
+                Debug.Log($"SaveManager: [{noteIndex}] Fallback prefab load result: {(notePrefab != null ? "SUCCESS" : "FAILED")}");
             }
 
             if (notePrefab != null)
             {
+                Debug.Log($"SaveManager: [{noteIndex}] Instantiating note at position: {nData.position.ToVector3()}");
                 GameObject noteObj = Instantiate(notePrefab, nData.position.ToVector3(), nData.rotation.ToQuaternion(), nodesParent);
                 noteObj.transform.localScale = nData.scale.ToVector3();
+                Debug.Log($"SaveManager: [{noteIndex}] Note instantiated successfully. GameObject: {noteObj.name}");
                 
                 Note note = noteObj.GetComponent<Note>();
+                Debug.Log($"SaveManager: [{noteIndex}] Note component: {(note != null ? "FOUND" : "NOT FOUND")}");
                 if (note != null && note.inputField != null)
                 {
                     note.inputField.text = nData.content;
@@ -261,23 +273,39 @@ public class SaveManager : MonoBehaviour
                 NoteCustomizable customizable = noteObj.GetComponent<NoteCustomizable>();
                 if (customizable != null)
                 {
-                    customizable.fontSize = nData.fontSize;
-                    customizable.textAlignHorizontal = (NoteTextAlignHorizontal)nData.textAlignHorizontal;
-                    customizable.textAlignVertical = (NoteTextAlignVertical)nData.textAlignVertical;
-                    customizable.UpdateTextAlignment();
+                    try
+                    {
+                        customizable.fontSize = nData.fontSize;
+                        customizable.textAlignHorizontal = (NoteTextAlignHorizontal)nData.textAlignHorizontal;
+                        customizable.textAlignVertical = (NoteTextAlignVertical)nData.textAlignVertical;
+                        customizable.UpdateTextAlignment();
+                        Debug.Log($"SaveManager: [{noteIndex}] Customizations applied successfully");
+                    }
+                    catch (System.Exception e)
+                    {
+                        Debug.LogWarning($"SaveManager: [{noteIndex}] Failed to apply customizations: {e.Message}");
+                    }
                 }
 
                 // Restore Color Theme
                 NoteColorable colorable = noteObj.GetComponent<NoteColorable>();
                 if (colorable != null)
                 {
-                    // Update color theme and apply it
-                    var themeField = typeof(NoteColorable).GetField("colorTheme", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-                    if (themeField != null)
+                    try
                     {
-                        themeField.SetValue(colorable, (NoteColorTheme)nData.colorTheme);
+                        // Update color theme and apply it
+                        var themeField = typeof(NoteColorable).GetField("colorTheme", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+                        if (themeField != null)
+                        {
+                            themeField.SetValue(colorable, (NoteColorTheme)nData.colorTheme);
+                        }
+                        colorable.ApplyColorTheme();
+                        Debug.Log($"SaveManager: [{noteIndex}] Color theme applied successfully");
                     }
-                    colorable.ApplyColorTheme();
+                    catch (System.Exception e)
+                    {
+                        Debug.LogWarning($"SaveManager: [{noteIndex}] Failed to apply color theme: {e.Message}");
+                    }
                 }
 
                 NoteLinkable linkable = noteObj.GetComponent<NoteLinkable>();
@@ -291,9 +319,22 @@ public class SaveManager : MonoBehaviour
                     {
                         NoteLinkManager.Instance.RegisterNote(linkable);
                     }
+                    Debug.Log($"SaveManager: [{noteIndex}] NoteLinkable registered with ID: {nData.noteId}");
                 }
+                else
+                {
+                    Debug.LogWarning($"SaveManager: [{noteIndex}] NoteLinkable component not found on note");
+                }
+                
+                Debug.Log($"SaveManager: [{noteIndex}] ✓ Note '{nData.content}' restored successfully!");
+            }
+            else
+            {
+                Debug.LogError($"SaveManager: [{noteIndex}] ✗ Failed to load prefab for note '{nData.content}'. Note skipped.");
             }
         }
+        
+        Debug.Log($"SaveManager: Finished restoring all {noteIndex} notes. Total spawned: {spawnedNotes.Count}");
 
         // 2. Restore Links
         if (NoteLinkManager.Instance != null)
