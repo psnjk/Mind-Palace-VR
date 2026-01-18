@@ -26,6 +26,8 @@ public class SaveControlPanel : MonoBehaviour
     private Button saveNameButton;
     private Button deleteButton;
 
+    public Portal exitPortal;
+
     [SerializeField] private float fadeDuration = 0.5f;
 
 
@@ -36,6 +38,7 @@ public class SaveControlPanel : MonoBehaviour
         SetupSaveNameButton();
         SetupDeleteButton();
     }
+
     void SetupSaveNameInputField()
     {
         // fetch the input field component
@@ -85,7 +88,16 @@ public class SaveControlPanel : MonoBehaviour
 
         saveNameButton.onClick.AddListener(() =>
         {
+            PlayerAudioManager.Instance?.Play();
             string newSaveName = saveNameInputField.text;
+            // edge case when then user creates a new room and no save exists yet, then create then the name must be set when exiting the portal
+            if (location == SaveControlPanelLocation.Room && string.IsNullOrEmpty(currentSaveId))
+            {
+                exitPortal.initialSaveName = newSaveName;
+                StartCoroutine(FlashButtonGreen());
+                return;
+            }
+
             string targetSaveId = location == SaveControlPanelLocation.Hub ? providedSaveId : currentSaveId;
             bool success = SaveManager.Instance.UpdateSaveName(targetSaveId, newSaveName); 
             if (!success)

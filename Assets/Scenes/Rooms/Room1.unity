@@ -555,7 +555,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2560497480130856658, guid: 4ec2876d1b7c94c4fad0ae3d467cd588, type: 3}
       propertyPath: m_AnchoredPosition.y
-      value: 0.0017089844
+      value: -0.001373291
       objectReference: {fileID: 0}
     - target: {fileID: 3301430854349351492, guid: 4ec2876d1b7c94c4fad0ae3d467cd588, type: 3}
       propertyPath: m_LocalPosition.x
@@ -9213,6 +9213,7 @@ MonoBehaviour:
   portalRenderer: {fileID: 1545717789}
   useFadeTransition: 1
   fadeDuration: 0.5
+  initialSaveName: 
 --- !u!23 &1545717789
 MeshRenderer:
   m_ObjectHideFlags: 0
@@ -11630,6 +11631,10 @@ PrefabInstance:
       propertyPath: location
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 2970043186829450684, guid: 25f39b57c722a3f4e80fff997fb4eaee, type: 3}
+      propertyPath: exitPortal
+      value: 
+      objectReference: {fileID: 1545717787}
     - target: {fileID: 4329121883302317953, guid: 25f39b57c722a3f4e80fff997fb4eaee, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0

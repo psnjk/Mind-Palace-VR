@@ -19,6 +19,9 @@ public class Portal : MonoBehaviour
     [Header("Fade Settings")]
     [SerializeField] private bool useFadeTransition = true;
     [SerializeField] private float fadeDuration = 0.5f;
+
+    // only used for saving when going back to main hub from a fresh room
+    public string initialSaveName = null;
     
     private UnityEngine.XR.Interaction.Toolkit.Interactables.XRSimpleInteractable interactable;
     private bool isPlayerNear;
@@ -89,12 +92,12 @@ public class Portal : MonoBehaviour
                     if (string.IsNullOrEmpty(idToUse))
                     {
                         Debug.Log($"Portal: No save ID found. Creating new save for {gameObject.name}.");
-                        SaveManager.Instance.SaveCurrentRoomAsExperience(null);
+                        SaveManager.Instance.SaveCurrentRoomAsExperience(null, initialSaveName);
                     }
                     else
                     {
                         Debug.Log($"Portal: Updating existing save ID {idToUse} via portal {gameObject.name}.");
-                        SaveManager.Instance.SaveCurrentRoomAsExperience(idToUse);
+                        SaveManager.Instance.SaveCurrentRoomAsExperience(idToUse, null);
                     }
                 }
                 LoadScene();

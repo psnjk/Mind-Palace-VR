@@ -472,14 +472,21 @@ public class SaveManager : MonoBehaviour
     /// <summary>
     /// Saves the current room as a new experience or updates an existing one. If saveId is null, creates a new save.
     /// </summary> 
-    public void SaveCurrentRoomAsExperience(string saveId = null)
+    public void SaveCurrentRoomAsExperience(string saveId = null, string initialSaveName = null)
     {
         string experienceName;
         string sceneName = UnityEngine.SceneManagement.SceneManager.GetActiveScene().name;
         if (string.IsNullOrEmpty(saveId))
         {
             saveId = System.Guid.NewGuid().ToString();
-            experienceName = $"{sceneName}_{System.DateTime.Now:yyyyMMdd_HHmmss}"; 
+            if (!string.IsNullOrEmpty(initialSaveName))
+            {
+                experienceName = initialSaveName;
+            }
+            else
+            {
+                experienceName = $"{sceneName}_{System.DateTime.Now:yyyyMMdd_HHmmss}";
+            }
         }
         else
         {
