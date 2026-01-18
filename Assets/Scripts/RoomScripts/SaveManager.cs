@@ -641,6 +641,12 @@ public class SaveManager : MonoBehaviour
             return false;
         }
     }
+
+    public string GetSceneName(string saveId)
+    {
+        SaveData saveData = GetSaveData(saveId);
+        return saveData != null ? saveData.sceneName : null;
+    }
     
     
 }

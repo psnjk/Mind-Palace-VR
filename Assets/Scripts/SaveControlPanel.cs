@@ -31,12 +31,33 @@ public class SaveControlPanel : MonoBehaviour
     [SerializeField] private float fadeDuration = 0.5f;
 
 
+    private TMP_Text mapNameText;
+
+
 
     void Start()
     {
         SetupSaveNameInputField();
+        SetupMapNameText();
         SetupSaveNameButton();
         SetupDeleteButton();
+    }
+
+    void SetupMapNameText()
+    {
+        try
+        {
+            mapNameText = transform.Find("Save Control Screen").Find("Background").Find("Map Name Text").GetComponent<TMP_Text>();
+        }
+        catch (System.Exception ex)
+        {
+            Debug.LogError("[SaveControlPanel] Error setting up map name text: " + ex.Message);
+            return;
+        }
+
+        string targetSaveId = location == SaveControlPanelLocation.Hub ? providedSaveId : currentSaveId;
+        string sceneName = SaveManager.Instance.GetSceneName(targetSaveId);
+        mapNameText.text = $"Map name: {(sceneName == null ? "" : sceneName)}";
     }
 
     void SetupSaveNameInputField()
