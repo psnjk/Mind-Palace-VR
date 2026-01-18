@@ -498,7 +498,7 @@ public class SaveManager : MonoBehaviour
         
         SaveData newData = new SaveData(saveId, experienceName, sceneName);
 
-            // 1. Collect Notes
+        // 1. Collect Notes
         Note[] allNotes = FindObjectsByType<Note>(FindObjectsSortMode.None);
         foreach (Note note in allNotes)
         {
@@ -611,5 +611,29 @@ public class SaveManager : MonoBehaviour
         
         Debug.Log($"[SaveManager] Experience '{experienceName}' saved successfully with ID: {saveId}");
     }
+
+    public string GetSaveName(string saveId)
+    {
+        SaveData saveData = GetSaveData(saveId);
+        return saveData != null ? saveData.saveName : null;
+    }
+
+    public bool UpdateSaveName(string saveId, string newSaveName)
+    {
+        SaveData saveData = GetSaveData(saveId);
+        if (saveData != null)
+        {
+            saveData.saveName = newSaveName;
+            SaveData(saveData);
+            Debug.Log($"SaveManager: Updated save name for {saveId} to '{newSaveName}'");
+            return true;
+        }
+        else
+        {
+            Debug.LogWarning($"SaveManager: Cannot update save name. Save with ID {saveId} not found.");
+            return false;
+        }
+    }
+    
     
 }

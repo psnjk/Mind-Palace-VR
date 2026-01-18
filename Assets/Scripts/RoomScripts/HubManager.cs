@@ -67,7 +67,9 @@ public class HubManager : MonoBehaviour
             Transform walls = hallway.transform.Find("Walls");
             Transform savesWall = hallway.transform.Find("SavesWall");
             Transform portalExp1 = hallway.transform.Find("PortalExp1");
+            Transform savePanelExp1 = hallway.transform.Find("SavePanelExp1");
             Transform portalExp2 = hallway.transform.Find("PortalExp2");
+            Transform savePanelExp2 = hallway.transform.Find("SavePanelExp2");
             Transform door = hallway.transform.Find("Door");
             
             // Calculate which saves this hallway displays
@@ -85,6 +87,20 @@ public class HubManager : MonoBehaviour
                 portal1.SetSaveId(saveIds[firstSaveIndex]);
                 
                 Debug.Log($"HubManager: Portal 1 in hallway {i + 1} -> Save ID: {saveIds[firstSaveIndex]}");
+
+                // Configure save panel 1
+                if (savePanelExp1 != null)
+                {
+                    SaveControlPanel panel1 = savePanelExp1.GetComponent<SaveControlPanel>();
+                    if (panel1 != null)
+                    {
+                        panel1.providedSaveId = saveIds[firstSaveIndex];
+                    }
+                    else
+                    {
+                        Debug.LogError($"HubManager: SaveControlPanel component not found on SavePanelExp1 in hallway {i + 1}");
+                    }
+                }
             }
             
             // Configure second portal (if exists)
@@ -99,6 +115,22 @@ public class HubManager : MonoBehaviour
                 portal2.SetSaveId(saveIds[secondSaveIndex]);
                 
                 Debug.Log($"HubManager: Portal 2 in hallway {i + 1} -> Save ID: {saveIds[secondSaveIndex]}");
+
+                // Configure save panel 2
+                if (savePanelExp2 != null)
+                {
+                    savePanelExp2.gameObject.SetActive(true);
+                    SaveControlPanel panel2 = savePanelExp2.GetComponent<SaveControlPanel>();
+                    if (panel2 != null)
+                    {
+                        panel2.providedSaveId = saveIds[secondSaveIndex];
+                    }
+                    else
+                    {
+                        Debug.LogError($"HubManager: SaveControlPanel component not found on SavePanelExp2 in hallway {i + 1}");
+                    }
+                }
+
             }
             
             // door (active if only one save in this hallway)
