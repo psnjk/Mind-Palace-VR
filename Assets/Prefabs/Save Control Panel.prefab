@@ -48,7 +48,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   location: 0
+  mainHubSceneName: MainHub
   providedSaveId: 
+  exitPortal: {fileID: 0}
+  fadeDuration: 0.5
 --- !u!1 &992647241468883899
 GameObject:
   m_ObjectHideFlags: 0
@@ -1955,6 +1958,10 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 1035294480182707755, guid: ea371db881c1d50478701557868b59d1, type: 3}
+      propertyPath: m_Color.a
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 1596798231433843691, guid: ea371db881c1d50478701557868b59d1, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
@@ -2865,6 +2872,18 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 1596798233429530640, guid: ea371db881c1d50478701557868b59d1, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1815748364461282783, guid: ea371db881c1d50478701557868b59d1, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2096028683630045184, guid: ea371db881c1d50478701557868b59d1, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3195480807138726657, guid: ea371db881c1d50478701557868b59d1, type: 3}
+      propertyPath: m_Enabled
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4227287076470931465, guid: ea371db881c1d50478701557868b59d1, type: 3}
@@ -2889,6 +2908,10 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 4784770077545369062, guid: ea371db881c1d50478701557868b59d1, type: 3}
       propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5163581048761876793, guid: ea371db881c1d50478701557868b59d1, type: 3}
+      propertyPath: m_Color.a
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5583558659631943067, guid: ea371db881c1d50478701557868b59d1, type: 3}
@@ -2953,6 +2976,14 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7569775637963492781, guid: ea371db881c1d50478701557868b59d1, type: 3}
       propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8269396999618987576, guid: ea371db881c1d50478701557868b59d1, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8567693386839161831, guid: ea371db881c1d50478701557868b59d1, type: 3}
+      propertyPath: m_IsActive
       value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 9068260420138108485, guid: ea371db881c1d50478701557868b59d1, type: 3}
