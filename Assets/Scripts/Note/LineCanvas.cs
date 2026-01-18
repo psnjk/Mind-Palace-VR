@@ -58,6 +58,7 @@ public class LineCanvas : MonoBehaviour, IPointerEnterHandler, IPointerExitHandl
         {
             deleteButton.onClick.RemoveAllListeners();
             deleteButton.onClick.AddListener(DeleteLink);
+            deleteButton.onClick.AddListener(() => PlayerAudioManager.Instance?.Play());
 
             Debug.Log($"[LineCanvas] Delete button set up successfully with hover effects");
         }

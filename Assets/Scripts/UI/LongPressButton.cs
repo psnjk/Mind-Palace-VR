@@ -184,6 +184,7 @@ public class LongPressButton : MonoBehaviour, IPointerDownHandler, IPointerUpHan
     /// </summary>
     private void StartHoldProcess()
     {
+        PlayerAudioManager.Instance?.Play();
         // Stop any existing hold process
         if (_holdCoroutine != null)
         {

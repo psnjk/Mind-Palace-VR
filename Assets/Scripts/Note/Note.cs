@@ -282,6 +282,7 @@ public class Note : MonoBehaviour
         {
             pinButton.onClick.RemoveAllListeners();
             pinButton.onClick.AddListener(ToggleLookAtCamera);
+            pinButton.onClick.AddListener(() => PlayerAudioManager.Instance?.Play());
 
             // Add ExpandingButton component if it doesn't exist
             ExpandingButton expandingButton = pinButtonTransform.GetComponent<ExpandingButton>();

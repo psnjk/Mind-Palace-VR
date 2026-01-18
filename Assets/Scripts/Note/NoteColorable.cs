@@ -162,6 +162,7 @@ public class NoteColorable : MonoBehaviour
                         _noteCustomizable.CloseCustomizationCanvas();
                     }
                 });
+                _mainColorButton.onClick.AddListener(() => PlayerAudioManager.Instance?.Play());
             }
             else
             {
@@ -477,6 +478,7 @@ public class NoteColorable : MonoBehaviour
 
             colorButton.onClick.RemoveAllListeners();
             colorButton.onClick.AddListener(() => OnColorButtonClicked(theme));
+            colorButton.onClick.AddListener(() => PlayerAudioManager.Instance?.Play());
         }
     }
 

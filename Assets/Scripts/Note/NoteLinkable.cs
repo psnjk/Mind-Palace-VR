@@ -182,6 +182,7 @@ public class NoteLinkable : MonoBehaviour
         {
             linkButton.onClick.RemoveAllListeners();
             linkButton.onClick.AddListener(ToggleLocalLinkMode);
+            linkButton.onClick.AddListener(() => PlayerAudioManager.Instance?.Play());
 
             // Add ExpandingButton component if it doesn't exist
             ExpandingButton expandingButton = linkButtonTransform.GetComponent<ExpandingButton>();
@@ -230,6 +231,7 @@ public class NoteLinkable : MonoBehaviour
                     AttachPoint currentAttachPoint = attachPoint; // Capture for closure
                     button.onClick.RemoveAllListeners();
                     button.onClick.AddListener(() => OnAttachPointButtonClicked(currentAttachPoint));
+                    button.onClick.AddListener(() => PlayerAudioManager.Instance?.Play());
 
                     // Add ExpandingButton component if it doesn't exist
                     ExpandingButton expandingButton = buttonTransform.GetComponent<ExpandingButton>();

@@ -122,6 +122,7 @@ public class NoteCustomizable : MonoBehaviour
 
             NoteTextAlignHorizontal capturedAlign = align; // Capture the current value of align
             alignButton.onClick.AddListener(() => OnTextAlignHorizontalButtonClicked(capturedAlign));
+            alignButton.onClick.AddListener(() => PlayerAudioManager.Instance?.Play());
         }
     }
 
@@ -288,6 +289,7 @@ public class NoteCustomizable : MonoBehaviour
 
             NoteTextAlignVertical capturedAlign = align; // Capture the current value of align
             alignButton.onClick.AddListener(() => OnTextAlignVerticalButtonClicked(capturedAlign));
+            alignButton.onClick.AddListener(() => PlayerAudioManager.Instance?.Play());
         }
     }
 
@@ -326,6 +328,7 @@ public class NoteCustomizable : MonoBehaviour
         }
 
         _customizeButton.onClick.AddListener(OnCustomizeButtonClicked);
+        _customizeButton.onClick.AddListener(() => PlayerAudioManager.Instance?.Play());
     }
 
     /// <summary>
@@ -438,6 +441,8 @@ public class NoteCustomizable : MonoBehaviour
             eventTrigger = _fontIncreaseButton.gameObject.AddComponent<EventTrigger>();
         }
 
+        _fontIncreaseButton.onClick.AddListener(() => PlayerAudioManager.Instance?.Play());
+
         // Add pointer down event
         EventTrigger.Entry pointerDownEntry = new EventTrigger.Entry();
         pointerDownEntry.eventID = EventTriggerType.PointerDown;
@@ -532,6 +537,8 @@ public class NoteCustomizable : MonoBehaviour
             Debug.Log($"[NoteCustomizable] Failed to find 'Font Decrease Button': {ex.Message}");
             return;
         }
+
+        _fontDecreaseButton.onClick.AddListener(() => PlayerAudioManager.Instance?.Play());
 
         // Add EventTrigger component for continuous press detection
         EventTrigger eventTrigger = _fontDecreaseButton.gameObject.GetComponent<EventTrigger>();

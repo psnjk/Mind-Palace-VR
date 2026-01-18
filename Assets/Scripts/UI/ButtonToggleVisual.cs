@@ -65,6 +65,7 @@ public class ButtonToggleVisual : MonoBehaviour
                 // Apply the pressed color using the button's color tint system
                 ColorBlock colors = button.colors;
                 button.image.color = originalColor * colors.pressedColor;
+                PlayerAudioManager.Instance?.Play();
             }
             else
             {
