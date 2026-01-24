@@ -19,6 +19,7 @@ public class Portal : MonoBehaviour
     [Header("Fade Settings")]
     [SerializeField] private bool useFadeTransition = true;
     [SerializeField] private float fadeDuration = 0.5f;
+    [SerializeField] private XRFade xrFade;
 
     // only used for saving when going back to main hub from a fresh room
     public string initialSaveName = null;
@@ -41,7 +42,7 @@ public class Portal : MonoBehaviour
     void Start()
     {
         SetupInteractable();
-        
+        SetupXRFade();
         if (portalRenderer != null && portalInactiveMaterial != null)
         {
             portalRenderer.material = portalInactiveMaterial;
@@ -59,6 +60,19 @@ public class Portal : MonoBehaviour
         interactable.selectEntered.AddListener(OnPortalSelected);
         interactable.hoverEntered.AddListener(OnHoverEnter);
         interactable.hoverExited.AddListener(OnHoverExit);
+    }
+
+    void SetupXRFade()
+    {
+        if (xrFade == null)
+        {
+            xrFade = FindFirstObjectByType<XRFade>();
+            if (xrFade == null)
+            {
+                Debug.LogWarning("Portal: No XRFade component found in scene. Fade transitions will be disabled.");
+                useFadeTransition = false;
+            }
+        }
     }
     
 
@@ -100,7 +114,17 @@ public class Portal : MonoBehaviour
                         SaveManager.Instance.SaveCurrentRoomAsExperience(idToUse, null);
                     }
                 }
-                LoadScene();
+                
+                if (useFadeTransition && xrFade != null)
+                {
+                    isLoading = true;
+                    xrFade.OnFadeOutComplete += OnFadeComplete;
+                    xrFade.FadeOut();
+                }
+                else
+                {
+                    LoadScene();
+                }
             }
         }      
     }
@@ -128,6 +152,30 @@ public class Portal : MonoBehaviour
         if (portalRenderer != null && portalInactiveMaterial != null)
         {
             portalRenderer.material = portalInactiveMaterial;
+        }
+    }
+    
+    private void OnFadeComplete()
+    {
+        if (xrFade != null)
+        {
+            xrFade.OnFadeOutComplete -= OnFadeComplete;
+        }
+        
+        // Load scene directly without additional fade
+        if (portalType == PortalType.DefaultScene)
+        {
+            if (!string.IsNullOrEmpty(defaultSceneName))
+            {
+                SaveManager.Instance.LoadScene(defaultSceneName);
+            }
+        }
+        else
+        {
+            if (!string.IsNullOrEmpty(saveId))
+            {
+                SaveManager.Instance.LoadExperience(saveId);
+            }
         }
     }
     
@@ -175,9 +223,19 @@ public class Portal : MonoBehaviour
     
     private IEnumerator FadeAndLoadDefault(string sceneName)
     {
-        if (FadeController.Instance != null)
+        if (xrFade != null)
         {
-            yield return StartCoroutine(FadeController.Instance.FadeOut(fadeDuration));
+            bool fadeComplete = false;
+            System.Action onComplete = () => fadeComplete = true;
+            xrFade.OnFadeOutComplete += onComplete;
+            xrFade.FadeOut();
+            
+            while (!fadeComplete)
+            {
+                yield return null;
+            }
+            
+            xrFade.OnFadeOutComplete -= onComplete;
         }
         else
         {
@@ -189,9 +247,19 @@ public class Portal : MonoBehaviour
 
     private IEnumerator FadeAndLoadExperience(string saveId)
     {
-        if (FadeController.Instance != null)
+        if (xrFade != null)
         {
-            yield return StartCoroutine(FadeController.Instance.FadeOut(fadeDuration));
+            bool fadeComplete = false;
+            System.Action onComplete = () => fadeComplete = true;
+            xrFade.OnFadeOutComplete += onComplete;
+            xrFade.FadeOut();
+            
+            while (!fadeComplete)
+            {
+                yield return null;
+            }
+            
+            xrFade.OnFadeOutComplete -= onComplete;
         }
         else
         {

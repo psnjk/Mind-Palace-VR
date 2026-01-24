@@ -28,8 +28,9 @@ public class SaveControlPanel : MonoBehaviour
 
     public Portal exitPortal;
 
+    [SerializeField] private bool useFadeTransition = true;
     [SerializeField] private float fadeDuration = 0.5f;
-
+    [SerializeField] private XRFade xrFade;
 
     private TMP_Text mapNameText;
 
@@ -37,10 +38,24 @@ public class SaveControlPanel : MonoBehaviour
 
     void Start()
     {
+        SetupXRFade();
         SetupSaveNameInputField();
         SetupMapNameText();
         SetupSaveNameButton();
         SetupDeleteButton();
+    }
+
+    void SetupXRFade()
+    {
+        if (xrFade == null)
+        {
+            xrFade = FindFirstObjectByType<XRFade>();
+            if (xrFade == null)
+            {
+                Debug.LogWarning("SaveControlPanel: No XRFade component found in scene. Fade transitions will be disabled.");
+                useFadeTransition = false;
+            }
+        }
     }
 
     void SetupMapNameText()
@@ -170,9 +185,19 @@ public class SaveControlPanel : MonoBehaviour
 
     private IEnumerator FadeAndLoadDefault(string sceneName)
     {
-        if (FadeController.Instance != null)
+        if (useFadeTransition && xrFade != null)
         {
-            yield return StartCoroutine(FadeController.Instance.FadeOut(fadeDuration));
+            bool fadeComplete = false;
+            System.Action onComplete = () => fadeComplete = true;
+            xrFade.OnFadeOutComplete += onComplete;
+            xrFade.FadeOut();
+            
+            while (!fadeComplete)
+            {
+                yield return null;
+            }
+            
+            xrFade.OnFadeOutComplete -= onComplete;
         }
         else
         {
