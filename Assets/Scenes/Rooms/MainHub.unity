@@ -581,53 +581,6 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 4002376893786018021, guid: 90d458b4605cf3a479960871f2f436cb, type: 3}
   m_PrefabInstance: {fileID: 1001091445}
   m_PrefabAsset: {fileID: 0}
---- !u!1 &1019167617
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1019167619}
-  - component: {fileID: 1019167618}
-  m_Layer: 0
-  m_Name: Fade
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!114 &1019167618
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1019167617}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 35f1dee7041440540a37697f0b5ffcf3, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  fadeCanvas: {fileID: 0}
-  fadeImage: {fileID: 0}
-  fadeColor: {r: 0, g: 0, b: 0, a: 1}
---- !u!4 &1019167619
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1019167617}
-  serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.8259797, y: 2.748043, z: 0.04968548}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &1030948276 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 1279363593276611159, guid: b69f79d98ac3d7544a87c9f8c0243473, type: 3}
@@ -922,6 +875,18 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3330469099910322096, guid: 4ec2876d1b7c94c4fad0ae3d467cd588, type: 3}
+      propertyPath: m_SizeDelta.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6182157015214301777, guid: 4ec2876d1b7c94c4fad0ae3d467cd588, type: 3}
+      propertyPath: m_AnchorMax.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6182157015214301777, guid: 4ec2876d1b7c94c4fad0ae3d467cd588, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 7466755370114506626, guid: 4ec2876d1b7c94c4fad0ae3d467cd588, type: 3}
       propertyPath: m_Name
       value: XR Origin (XR Rig)
@@ -1054,5 +1019,4 @@ SceneRoots:
   - {fileID: 513168298}
   - {fileID: 17550388480548624}
   - {fileID: 1188085648}
-  - {fileID: 1019167619}
   - {fileID: 367475442}
