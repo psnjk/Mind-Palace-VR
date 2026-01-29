@@ -42,6 +42,12 @@ git clone https://github.com/psnjk/Mind-Palace-VR.git
 8. Click on "Build and Run", then choose where to put the compiled APK file and wait for it to compile.
 9. The app should run automatically on the connected Quest device.
 
+OR 
+
+1. Download the APK from https://drive.google.com/file/d/1QJgIitVxx3IE0UbVELkNXytDy1eOiKPQ/view?usp=sharing
+2. Connect the Quest device to the computer.
+3. Make sure to have adb installed.
+4. Run `adb install MindPalace.apk`
 
 
 ## Controls
