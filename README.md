@@ -22,6 +22,8 @@ git clone https://github.com/psnjk/Mind-Palace-VR.git
 ```
 2. Open the project in Unity
 3. Go to Scenes->Rooms and open the MainHub scene.
+4. Make sure that the Quest device is connected to the computer via the Meta Horizon Link app.
+5. Start the MainHub scene.
 
 
 
