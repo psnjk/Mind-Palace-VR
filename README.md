@@ -13,17 +13,34 @@
 - XR Plugin Management -> Project Validation -> Click "Fix All" for Windows and Android.
 
 
-## How to run on Unity
+## How to run on Unity (PCVR)
 1. This project uses Git LFS for the large files. It must be installed before cloning the repo.
 ```shell
 git lfs install
 
+# this can take a couple of minutes depending on the internet speed since the project is around 1.5 GB
 git clone https://github.com/psnjk/Mind-Palace-VR.git
 ```
-2. Open the project in Unity
+2. Open the project in Unity (this can take a couple of minutes)
 3. Go to Scenes->Rooms and open the MainHub scene.
 4. Make sure that the Quest device is connected to the computer via the Meta Horizon Link app.
 5. Start the MainHub scene.
+
+## How to run on a Quest device
+1. This project uses Git LFS for the large files. It must be installed before cloning the repo.
+```shell
+git lfs install
+
+# this can take a couple of minutes depending on the internet speed since the project is around 1.5 GB
+git clone https://github.com/psnjk/Mind-Palace-VR.git
+```
+2. Open the project in Unity (this can take a couple of minutes)
+4. Make sure that the Quest device is connected to the computer and that the Quest device is in developer mode to enable adb.
+5. File -> Build Profiles -> Choose Android -> Select the Quest as "Run Device".
+6. Make sure that the following scenes are selected in the "Scene list": Scenes/Rooms/MainHub, Scenes/Rooms/Room1, Scenes/Rooms/Room2, Scenes/Rooms/Room3 .
+7. Click on "Switch Platform" on the top right and wait for it to finish.
+8. Click on "Build and Run", then choose where to put the compiled APK file and wait for it to compile.
+9. The app should run automatically on the connected Quest device.
 
 
 
